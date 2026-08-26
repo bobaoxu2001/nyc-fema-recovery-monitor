@@ -1,0 +1,37 @@
+{
+  "name": "nyc-fema-recovery-monitor",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Independent analytical prototype for FEMA Public Assistance grant portfolio monitoring using OpenFEMA data.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run && python3 -m unittest tests.test_pipeline",
+    "test:js": "vitest run",
+    "test:py": "python3 -m unittest tests.test_pipeline",
+    "data:refresh": "python3 scripts/fetch_fema_data.py"
+  },
+  "dependencies": {
+    "lucide-react": "^0.469.0",
+    "next": "^15.5.2",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "recharts": "^2.15.3"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.6",
+    "@types/node": "^22.15.3",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^9.25.1",
+    "eslint-config-next": "^15.5.2",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.8.3",
+    "vitest": "^2.1.9"
+  }
+}

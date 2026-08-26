@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="NYC FEMA Recovery Monitor">
+  <rect width="64" height="64" rx="6" fill="#1a3654"/>
+  <rect x="8" y="8" width="48" height="48" rx="2" fill="#f3efe6"/>
+  <rect x="8" y="8" width="48" height="10" fill="#1a3654"/>
+  <rect x="14" y="42" width="7" height="8" fill="#215e57"/>
+  <rect x="24" y="34" width="7" height="16" fill="#1a3654"/>
+  <rect x="34" y="28" width="7" height="22" fill="#b08d57"/>
+  <rect x="44" y="22" width="7" height="28" fill="#9c4b2f"/>
+</svg>

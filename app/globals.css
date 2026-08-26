@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+    background-image:
+      linear-gradient(180deg, rgba(252, 251, 247, 0.7), rgba(243, 239, 230, 0.9)),
+      repeating-linear-gradient(
+        0deg,
+        rgba(28, 36, 48, 0.015),
+        rgba(28, 36, 48, 0.015) 1px,
+        transparent 1px,
+        transparent 24px
+      );
+    min-height: 100vh;
+  }
+
+  :focus-visible {
+    @apply outline outline-2 outline-offset-2 outline-navy;
+  }
+
+  table {
+    @apply w-full text-left text-sm;
+  }
+
+  th {
+    @apply whitespace-nowrap px-3 py-2 text-[11px] font-medium uppercase tracking-[0.12em] text-ink-faint;
+  }
+
+  td {
+    @apply px-3 py-2 align-middle text-sm;
+  }
+
+  tbody tr {
+    @apply border-t border-rule/80;
+  }
+
+  code {
+    @apply rounded bg-paper-2 px-1 py-0.5 text-[0.85em];
+  }
+}
+
+@layer components {
+  .page-wrap {
+    @apply mx-auto w-full max-w-[1180px] px-4 sm:px-6;
+  }
+
+  .kicker {
+    @apply text-[11px] font-medium uppercase tracking-[0.18em] text-gold;
+  }
+
+  .panel {
+    @apply rounded border border-rule bg-paper-3 shadow-card;
+  }
+
+  .kpi-card {
+    @apply rounded border border-rule bg-paper-3 p-4 shadow-card;
+    border-left-width: 3px;
+    border-left-color: #1a3654;
+  }
+
+  .banner-flag {
+    @apply rounded border border-terracotta/30 bg-terracotta-pale px-3 py-2 text-sm text-ink;
+  }
+
+  .flag-chip {
+    @apply inline-flex items-center rounded-sm border border-terracotta/40 bg-terracotta-pale px-1.5 py-0.5 text-[11px] font-medium text-terracotta;
+  }
+
+  .btn-secondary {
+    @apply inline-flex h-9 items-center rounded border border-rule bg-paper-3 px-3 text-sm text-navy hover:bg-navy-pale disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
