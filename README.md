@@ -143,13 +143,17 @@ The script pages through the OpenFEMA API, joins applicants and disaster titles,
 
 ## Deployment
 
-The app is a standard Next.js site. Vercel is the intended host.
+Live URL:
+
+**https://nyc-fema-recovery-monitor.vercel.app**
+
+The app is a standard Next.js site hosted on Vercel.
 
 ```bash
 npx vercel --prod --yes
 ```
 
-`public/data/projects.json` must be present before the build. The first browser load fetches that snapshot; after that, all filtering is client-side.
+`public/data/projects.json` must be present before the build. The first browser load fetches that snapshot (~23MB uncompressed; hosts typically gzip it in transit). After that, all filtering is client-side.
 
 ## Interview notes
 
