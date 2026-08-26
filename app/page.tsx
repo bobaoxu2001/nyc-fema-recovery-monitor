@@ -2,7 +2,6 @@
 
 import { ApplicantTable } from "@/components/applicant-table";
 import { CategoryChart } from "@/components/category-chart";
-import { DisclaimerBanner } from "@/components/disclaimer-banner";
 import { DisasterChart } from "@/components/disaster-chart";
 import { KpiGrid } from "@/components/kpi-grid";
 import { usePortfolio } from "@/components/providers";
@@ -14,7 +13,7 @@ import { formatPercent } from "@/lib/format";
 import Link from "next/link";
 
 export default function OverviewPage() {
-  const { error, meta, kpis, byDisaster, byApplicant, byCategory, filters } = usePortfolio();
+  const { error, meta, kpis, byDisaster, byApplicant, byCategory } = usePortfolio();
   const proven = canonicalMeta(meta);
   const topApplicant = byApplicant[0];
   const topCategory = byCategory[0];
@@ -25,9 +24,9 @@ export default function OverviewPage() {
 
   return (
     <div className="space-y-4">
-      <DisclaimerBanner compact />
       <ScopeBar />
       <KpiGrid kpis={kpis} hydrating={false} />
+      <DisasterChart rows={byDisaster} />
       {topApplicant || topCategory ? (
         <section className="panel p-4" aria-label="Portfolio concentration">
           <h2 className="font-serif text-lg text-navy">Portfolio concentration indicator</h2>
@@ -41,7 +40,7 @@ export default function OverviewPage() {
                 Top applicant share
               </dt>
               <dd className="mt-1 font-serif text-2xl text-navy tabular">
-                {topApplicant ? formatPercent(topApplicant.share) : "Unavailable"}
+                {topApplicant ? formatPercent(topApplicant.share) : "—"}
               </dd>
               <p className="mt-1 text-xs text-ink-soft">
                 {topApplicant ? displayApplicantName(topApplicant.name) : ""}
@@ -52,14 +51,13 @@ export default function OverviewPage() {
                 Top category share
               </dt>
               <dd className="mt-1 font-serif text-2xl text-navy tabular">
-                {topCategory ? formatPercent(topCategory.share) : "Unavailable"}
+                {topCategory ? formatPercent(topCategory.share) : "—"}
               </dd>
               <p className="mt-1 text-xs text-ink-soft">{topCategory?.name}</p>
             </div>
           </dl>
         </section>
       ) : null}
-      <DisasterChart rows={byDisaster} />
       {byApplicant.length || byCategory.length ? (
         <div className="grid gap-4 lg:grid-cols-2">
           <ApplicantTable rows={byApplicant} interactive={false} />

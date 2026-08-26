@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   formatCompactUsd,
+  formatJoinCoverage,
   formatPercent,
   formatProvenanceCount,
   formatProvenanceUsd,
@@ -45,6 +46,12 @@ describe("provenance formatting", () => {
     expect(formatProvenanceCount(0)).toBe("0");
     expect(formatProvenanceCount(59291)).toBe("59,291");
     expect(formatProvenanceUsd(41058915840.25)).toBe("$41.1B");
+  });
+
+  it("formats join coverage as matched/total with a percentage", () => {
+    expect(formatJoinCoverage(59291, 59291)).toBe("59,291 / 59,291 (100.0%)");
+    expect(formatJoinCoverage(0, 59291)).toBe("0 / 59,291 (0.0%)");
+    expect(formatJoinCoverage(null, 59291)).toBe("Unavailable");
   });
 
   it("formats refresh dates without ISO strings", () => {

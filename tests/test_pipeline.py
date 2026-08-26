@@ -7,6 +7,8 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from fema_pipeline import (  # noqa: E402
     attach_duplicate_groups,
+    attach_flag_counts,
+    screening_flag_mix,
     choose_project_identifier,
     encode_public_snapshot,
     missing_critical_fields,
@@ -99,6 +101,32 @@ class DuplicateAndMissingTests(unittest.TestCase):
         self.assertIsNotNone(rows[0]["duplicateGroup"])
         self.assertEqual(rows[0]["duplicateGroup"], rows[1]["duplicateGroup"])
         self.assertIsNone(rows[2]["duplicateGroup"])
+
+
+class FlagCountTests(unittest.TestCase):
+    def test_attach_flag_counts_includes_disaster_applicant_counts(self):
+        rows = [
+            {"id": "1", "d": 1, "fs": 100, "applicantId": "a", "mf": [], "dg": None},
+            {"id": "2", "d": 1, "fs": 100, "applicantId": "b", "mf": [], "dg": None},
+            {"id": "3", "d": 2, "fs": -1, "applicantId": "a", "mf": [], "dg": None},
+        ]
+        stats = attach_flag_counts(
+            {"byDisaster": [{"key": "1", "name": "d1"}, {"key": "2", "name": "d2"}]},
+            rows,
+        )
+        self.assertEqual(stats["byDisaster"][0]["applicantCount"], 2)
+        self.assertEqual(stats["byDisaster"][1]["applicantCount"], 1)
+        self.assertEqual(stats["flaggedCount"], 1)
+        self.assertEqual(stats["byDisaster"][1]["flaggedCount"], 1)
+        self.assertEqual(stats["byDisaster"][0]["flaggedCount"], 0)
+
+    def test_screening_flag_mix_separates_amount_and_quality(self):
+        rows = [{"id": str(i), "d": 1, "fs": 100 + i, "mf": [], "dg": None} for i in range(20)]
+        rows.append({"id": "neg", "d": 1, "fs": -5, "mf": [], "dg": None})
+        mix = screening_flag_mix(rows)
+        self.assertEqual(mix["negative"], 1)
+        self.assertEqual(mix["amountScreen"], mix["highDollar"] + mix["extreme"])
+        self.assertEqual(mix["flaggedCount"], mix["amountScreen"] + mix["negative"])
 
 
 class TransformTests(unittest.TestCase):

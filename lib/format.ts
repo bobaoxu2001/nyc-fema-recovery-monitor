@@ -69,6 +69,17 @@ export function formatPercent(value: number | null | undefined, digits = 1): str
   return `${(value * 100).toFixed(digits)}%`;
 }
 
+export function formatJoinCoverage(
+  matched: number | null | undefined,
+  total: number | null | undefined,
+): string {
+  if (matched == null || total == null || Number.isNaN(matched) || Number.isNaN(total)) {
+    return "Unavailable";
+  }
+  const pct = total === 0 ? "—" : `${((matched / total) * 100).toFixed(1)}%`;
+  return `${formatProvenanceCount(matched)} / ${formatProvenanceCount(total)} (${pct})`;
+}
+
 export function formatDate(value: string | null | undefined): string {
   if (!value) return "—";
   const iso = value.slice(0, 10);

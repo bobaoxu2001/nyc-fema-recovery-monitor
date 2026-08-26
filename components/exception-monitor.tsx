@@ -22,8 +22,9 @@ export function ExceptionMonitor() {
           Amount flags compare a worksheet with other projects in the same
           disaster. They do not change when you filter to one applicant. High-dollar
           is the 95th–99th percentile. Extreme is the 99th percentile and above.
-          A project gets one amount flag, not both. These are not findings of
-          non-compliance.
+          A project gets one amount flag, not both. A queue near 5% of worksheets
+          is partly by design because of that materiality screen; it is not an
+          estimated error rate. These are not findings of non-compliance.
         </p>
         <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
           <div className="rounded border border-rule bg-paper px-3 py-2">

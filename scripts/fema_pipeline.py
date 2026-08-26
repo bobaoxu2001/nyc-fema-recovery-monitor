@@ -481,9 +481,8 @@ def build_meta(
         "source": SOURCE,
         "identifier": validation["identity"],
         "disclaimer": (
-            "This application is an independent analytical prototype created for educational "
-            "and interview demonstration purposes. It is not affiliated with FEMA, NYC OMB, "
-            "New York State, or the City of New York."
+            "Independent analytical prototype using public OpenFEMA data. Not affiliated "
+            "with FEMA, NYC OMB, New York State, or the City of New York."
         ),
         "flagDisclaimer": (
             "Analytical flags are screening indicators only and do not represent findings of "
@@ -663,7 +662,72 @@ def screening_flag_ids(rows: list[dict[str, Any]]) -> set[str]:
     return {item for item in flagged if item}
 
 
-def attach_flag_counts(slice_stats: dict[str, Any], rows: list[dict[str, Any]]) -> dict[str, Any]:
+def screening_flag_mix(rows: list[dict[str, Any]]) -> dict[str, int]:
+    """Count exclusive amount-screen flags vs data-quality flags."""
+    by_disaster: dict[Any, list[dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        by_disaster[row.get("d")].append(row)
+    n_high = n_ext = n_miss = n_neg = n_dup = 0
+    flagged: set[str] = set()
+    for cohort in by_disaster.values():
+        positive = [
+            row["fs"]
+            for row in cohort
+            if isinstance(row.get("fs"), (int, float)) and row["fs"] > 0
+        ]
+        p95 = percentile(positive, 0.95) if len(positive) >= 20 else None
+        p99 = percentile(positive, 0.99) if len(positive) >= 20 else None
+        for row in cohort:
+            row_id = str(row.get("id") or row.get("gm") or "")
+            if not row_id:
+                continue
+            amount = row.get("fs")
+            marked = False
+            if isinstance(amount, (int, float)) and amount < 0:
+                n_neg += 1
+                marked = True
+            if row.get("mf"):
+                n_miss += 1
+                marked = True
+            if row.get("dg"):
+                n_dup += 1
+                marked = True
+            if isinstance(amount, (int, float)) and amount > 0 and p99 is not None and amount >= p99:
+                n_ext += 1
+                marked = True
+            elif isinstance(amount, (int, float)) and amount > 0 and p95 is not None and amount >= p95:
+                n_high += 1
+                marked = True
+            if marked:
+                flagged.add(row_id)
+    return {
+        "flaggedCount": len(flagged),
+        "highDollar": n_high,
+        "extreme": n_ext,
+        "negative": n_neg,
+        "missing": n_miss,
+        "duplicateLooking": n_dup,
+        "amountScreen": n_high + n_ext,
+    }
+
+
+def row_applicant_id(
+    row: dict[str, Any],
+    applicants: list[dict[str, Any]] | None = None,
+) -> str:
+    if row.get("applicantId"):
+        return str(row["applicantId"])
+    idx = row.get("a")
+    if applicants is not None and isinstance(idx, int) and 0 <= idx < len(applicants):
+        return str(applicants[idx].get("applicantId") or "")
+    return ""
+
+
+def attach_flag_counts(
+    slice_stats: dict[str, Any],
+    rows: list[dict[str, Any]],
+    applicants: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
     flagged = screening_flag_ids(rows)
     by_disaster_rows: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in rows:
@@ -671,7 +735,14 @@ def attach_flag_counts(slice_stats: dict[str, Any], rows: list[dict[str, Any]]) 
     slice_stats["flaggedCount"] = len(flagged)
     for item in slice_stats.get("byDisaster") or []:
         key = str(item.get("key"))
-        item["flaggedCount"] = len(screening_flag_ids(by_disaster_rows.get(key, [])))
+        cohort = by_disaster_rows.get(key, [])
+        item["flaggedCount"] = len(screening_flag_ids(cohort))
+        applicant_ids = set()
+        for row in cohort:
+            aid = row_applicant_id(row, applicants)
+            if aid:
+                applicant_ids.add(aid)
+        item["applicantCount"] = len(applicant_ids)
     return slice_stats
 
 
@@ -714,8 +785,8 @@ def build_summary(transformed: dict[str, Any], meta: dict[str, Any]) -> dict[str
         }
 
     nyc_rows = [row for row in projects if row.get("nyc") == 1]
-    all_stats = attach_flag_counts(slice_stats(projects), projects)
-    nyc_stats = attach_flag_counts(slice_stats(nyc_rows), nyc_rows)
+    all_stats = attach_flag_counts(slice_stats(projects), projects, applicants)
+    nyc_stats = attach_flag_counts(slice_stats(nyc_rows), nyc_rows, applicants)
     return {
         "meta": meta,
         "allNy": all_stats,

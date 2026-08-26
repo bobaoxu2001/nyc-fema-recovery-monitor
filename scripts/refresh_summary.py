@@ -14,7 +14,21 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
 
-from fema_pipeline import attach_flag_counts, write_json  # noqa: E402
+from fema_pipeline import attach_flag_counts, screening_flag_mix, write_json  # noqa: E402
+
+# One-time OpenFEMA Applicants v1 audit (2026-08-26). Not refetched on summary refresh.
+APPLICANT_NAME_STABILITY = {
+    "source": "OpenFEMA Public Assistance Applicants v1, filter state eq 'New York'",
+    "auditedAt": "2026-08-26",
+    "applicantRowsForSnapshotIds": 14908,
+    "idsWithMultipleExactNames": 523,
+    "exactNamesWithMultipleIds": 0,
+    "note": (
+        "The same applicantId can carry more than one exact source name across disasters. "
+        "Exact source names do not collide across applicantId values. The dashboard keeps "
+        "one interned label per applicantId."
+    ),
+}
 
 ROOT = SCRIPT_DIR.parent
 PUBLIC = ROOT / "public" / "data"
@@ -85,8 +99,17 @@ def main() -> int:
     summary["allNy"] = attach_flag_counts(summary["allNy"], rows)
     summary["nyc"] = attach_flag_counts(summary["nyc"], nyc_rows)
     quality = join_quality(snapshot, rows)
+    quality["internedExactNameOneToOne"] = (
+        quality["distinctApplicantId"] == quality["distinctApplicantName"] == len(snapshot["applicants"])
+    )
+    quality["nameStabilityAudit"] = APPLICANT_NAME_STABILITY
     summary["meta"]["joinQuality"] = quality
+    summary["meta"]["flagMix"] = screening_flag_mix(rows)
     summary["meta"]["applicantCountDefinition"] = quality["applicantCountDefinition"]
+    summary["meta"]["disclaimer"] = (
+        "Independent analytical prototype using public OpenFEMA data. Not affiliated "
+        "with FEMA, NYC OMB, New York State, or the City of New York."
+    )
     write_json(str(summary_path), summary)
     write_json(str(PROCESSED / "summary.json"), summary)
     print("allNy flagged", summary["allNy"]["flaggedCount"])

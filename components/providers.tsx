@@ -218,7 +218,7 @@ export function usePortfolio() {
     kpis = {
       projectCount: disasterRow.projects,
       federalShare: disasterRow.federalShare,
-      applicantCount: null,
+      applicantCount: disasterRow.applicantCount ?? null,
       disasterCount: 1,
       medianProject: null,
       averageProject: null,

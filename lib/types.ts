@@ -110,6 +110,24 @@ export type SnapshotMeta = {
     distinctApplicantId: number;
     distinctApplicantName: number;
     applicantCountDefinition: string;
+    internedExactNameOneToOne?: boolean;
+    nameStabilityAudit?: {
+      source: string;
+      auditedAt: string;
+      applicantRowsForSnapshotIds: number;
+      idsWithMultipleExactNames: number;
+      exactNamesWithMultipleIds: number;
+      note: string;
+    };
+  };
+  flagMix?: {
+    flaggedCount: number;
+    highDollar: number;
+    extreme: number;
+    negative: number;
+    missing: number;
+    duplicateLooking: number;
+    amountScreen: number;
   };
   sourceCheck?: {
     apiKeyRequired?: boolean;
@@ -221,6 +239,7 @@ export type NamedTotal = {
   federalShare: number;
   share: number;
   flaggedCount?: number;
+  applicantCount?: number;
 };
 
 export type Kpis = {

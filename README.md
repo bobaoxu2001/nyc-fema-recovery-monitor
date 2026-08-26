@@ -4,7 +4,7 @@ A lightweight analytical prototype for FEMA Public Assistance grant portfolio mo
 
 It organizes public OpenFEMA project-worksheet data for New York into a simple analyst workflow: portfolio totals, funding by disaster / applicant / work category, and screening flags for records that may deserve a closer look.
 
-This is an independent interview demonstration. It is not affiliated with FEMA, NYC OMB, New York State, or the City of New York.
+Independent analytical prototype using public OpenFEMA data. Not affiliated with FEMA, NYC OMB, New York State, or the City of New York.
 
 ## Why This Project
 
@@ -55,6 +55,8 @@ The app does **not** use Public Assistance Grant Award Activities for headline t
 
 **Primary metric:** federal share obligated.
 
+The homepage **Applicants** count is distinct OpenFEMA `applicantId` values (4,819 in this snapshot). That is a unique key in the source file, not a legal-entity count after name resolution. The same organization can appear under more than one ID or spelling.
+
 The data universe is **New York State Public Assistance**. The headline federal-share figure is statewide. **NYC-related** is an analyst-constructed subset, not an official geography, and not every tagged applicant is a City agency. A record is tagged if:
 
 1. County is Bronx, Kings, New York, Queens, or Richmond, or
@@ -67,27 +69,33 @@ Details live on the in-app **Methodology** page.
 
 ## Analytical Flags
 
-Flags are calculated on the currently filtered portfolio.
+Amount flags use the disaster as the peer group. A Sandy worksheet is compared with other Sandy worksheets. The baseline does not change when the page is filtered to one applicant. High-dollar and Extreme are mutually exclusive. A 95th-percentile cut surfaces roughly the top twentieth of each disaster, so a review queue near 5% of worksheets is partly by design. It is not an estimated error rate.
+
+In this snapshot, 2,963 worksheets are flagged (5.0%): 2,935 from the materiality screen (2,327 high-dollar, 608 extreme) and 28 negative federal-share records.
 
 | Flag | Rule |
 | --- | --- |
-| High-dollar project | Federal share ≥ 95th percentile of positive amounts, and at least 20 positive-amount projects are in the selection |
-| Extreme amount outlier | Federal share ≥ 99th percentile under the same conditions |
-| Missing project information | Applicant name, disaster, work category, title, or federal share is missing |
-| Negative federal obligation | Federal share < 0 (may be a deobligation or adjustment) |
-| Potential duplicate-looking record | Same disaster, applicant, normalized title, and federal share rounded to the nearest $100 |
+| High-dollar | Federal share is in the 95th–99th percentile of positive amounts in the same disaster, with at least 20 positive-amount worksheets in that disaster |
+| Extreme | Federal share is at or above the 99th percentile of the same disaster cohort |
+| Missing | Applicant name, disaster, work category, title, or federal share is missing |
+| Negative | Federal share < 0 (may be a deobligation or adjustment) |
+| Duplicate-looking | Same disaster, same applicant ID, normalized project title, and federal share rounded to the nearest $100 |
 
-Applicant concentration (≥ 10% of selected federal obligations) and category concentration (≥ 25%) are shown as **portfolio indicators**, not as accusations.
+Top applicant / category share is shown as a **portfolio concentration indicator**. It is descriptive only and is not a risk finding.
 
 > Flags are analytical screening indicators only. They do not represent compliance findings or FEMA eligibility determinations.
 
 ## Limitations
 
-> This application is an independent analytical prototype created for educational and interview demonstration purposes. It is not affiliated with FEMA, NYC OMB, New York State, or the City of New York.
+> Independent analytical prototype using public OpenFEMA data. Not affiliated with FEMA, NYC OMB, New York State, or the City of New York.
 
 > Analytical flags are screening indicators only and do not represent findings of non-compliance, fraud, grant ineligibility, or improper expenditure.
 
 OpenFEMA does not include procurement files, contracts, invoices, proofs of payment, insurance documents, or City reimbursement status. The project-detail checklist is illustrative only. OpenFEMA also notes that its financial figures come from Grants Manager, not FEMA’s official financial systems, and are not intended for official federal reporting.
+
+Federal-share amounts are nominal and already net of the applicable cost share; they are not a like-for-like comparison across disasters.
+
+This snapshot is a current-state obligated portfolio, not a measure of recovery progress over time.
 
 ## Tech Stack
 

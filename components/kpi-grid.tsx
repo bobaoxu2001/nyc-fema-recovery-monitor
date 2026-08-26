@@ -25,7 +25,7 @@ const ITEMS: Array<{
   },
   {
     key: "applicantCount",
-    label: "Applicant IDs",
+    label: "Applicants",
     hint: "Distinct OpenFEMA applicantId values. This is not a legal-entity count. The same organization can appear under more than one ID or name spelling.",
     footnote: "Distinct applicantId",
   },
@@ -38,7 +38,7 @@ const ITEMS: Array<{
   {
     key: "flaggedCount",
     label: "Worksheets flagged for review",
-    hint: "Worksheets with at least one screening flag versus the disaster cohort, or a data-quality flag. Not a compliance finding.",
+    hint: "Worksheets with at least one screening flag versus the disaster cohort, or a data-quality flag. A queue near 5% is partly by design because of the p95 materiality screen. Not a compliance finding or an error-rate estimate.",
     footnote: "Screening only",
   },
 ];
@@ -49,11 +49,13 @@ export function KpiGrid({ kpis, hydrating = false }: { kpis: Kpis; hydrating?: b
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         {ITEMS.map((item) => {
           const raw = kpis[item.key];
-          const pending = raw == null && (item.key === "flaggedCount" || item.key === "applicantCount" || item.key === "disasterCount");
+          const pending =
+            raw == null &&
+            (item.key === "flaggedCount" || item.key === "applicantCount" || item.key === "disasterCount");
           const display = pending
-            ? hydrating && item.key === "flaggedCount"
+            ? hydrating
               ? "Loading"
-              : "Unavailable"
+              : "—"
             : item.money
               ? formatCompactUsd(typeof raw === "number" ? raw : null)
               : formatCount(typeof raw === "number" ? raw : null);

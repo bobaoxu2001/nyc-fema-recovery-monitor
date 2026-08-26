@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { canonicalMeta } from "@/lib/canonical";
-import { formatProvenanceCount, formatProvenanceUsd, formatRefreshShort } from "@/lib/format";
+import { formatRefreshShort } from "@/lib/format";
 import { useData } from "./providers";
 
 const NAV = [
@@ -20,32 +20,22 @@ export function SiteHeader() {
 
   return (
     <header className="border-b border-rule bg-paper-3">
-      <div className="page-wrap py-5">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="max-w-3xl">
-            <p className="kicker">Independent analytical prototype</p>
-            <Link href="/" className="mt-2 block">
-              <h1 className="font-serif text-[1.85rem] leading-tight text-navy md:text-[2.15rem]">
-                New York FEMA Public Assistance Recovery Monitor
-              </h1>
-            </Link>
-            <p className="mt-2 text-sm text-ink">
-              New York State portfolio · NYC-related analytical view
-            </p>
-          </div>
-          <div className="rounded border border-rule bg-paper px-3 py-2 text-right text-xs text-ink-soft">
-            <div>New York State Public Assistance · OpenFEMA</div>
-            <div className="mt-1 text-sm text-ink">
-              Snapshot updated {formatRefreshShort(proven.retrievedAt)}
-            </div>
-            <div className="mt-1 tabular">
-              {formatProvenanceCount(proven.recordCount)} worksheets ·{" "}
-              {formatProvenanceUsd(proven.federalShareSum)} federal share
-            </div>
-          </div>
+      <div className="page-wrap py-4">
+        <div>
+          <Link href="/" className="block">
+            <h1 className="font-serif text-[1.7rem] leading-tight text-navy md:text-[2rem]">
+              New York FEMA Public Assistance Recovery Monitor
+            </h1>
+          </Link>
+          <p className="mt-1 text-sm text-ink">
+            New York State portfolio · NYC-related analytical view
+          </p>
+          <p className="mt-0.5 text-xs text-ink-soft">
+            OpenFEMA · Snapshot updated {formatRefreshShort(proven.retrievedAt)}
+          </p>
         </div>
         <nav
-          className="mt-5 flex flex-wrap gap-1 border-t border-rule pt-3"
+          className="mt-3 flex flex-wrap gap-1 border-t border-rule pt-3"
           aria-label="Primary"
         >
           {NAV.map((item) => {

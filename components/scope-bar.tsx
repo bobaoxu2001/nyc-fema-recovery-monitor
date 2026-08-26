@@ -8,23 +8,9 @@ export function ScopeBar() {
   const { filters, setFilters, resetFilters, byDisaster, summary, hydrating } = usePortfolio();
   const disasters = byDisaster.length ? byDisaster : summary.allNy.byDisaster;
   const shortcuts = interviewDisasterShortcuts(disasters);
-  const universeLabel =
-    filters.geography === "nyc"
-      ? "NYC-related analytical subset"
-      : "New York State FEMA Public Assistance portfolio";
-
   return (
-    <section className="panel p-4" aria-label="Portfolio universe">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-ink">
-          <span className="font-medium text-navy">{universeLabel}</span>
-          <span className="text-ink-soft"> · NYC-related is an analyst subset, not an official geography</span>
-        </p>
-        <button type="button" className="btn-secondary" onClick={resetFilters}>
-          Reset
-        </button>
-      </div>
-      <div className="mt-3 flex flex-wrap items-center gap-2">
+    <section className="panel px-3 py-2" aria-label="Portfolio universe">
+      <div className="flex flex-wrap items-center gap-2">
         <div
           className="inline-flex rounded border border-rule bg-paper p-0.5"
           role="group"
@@ -81,6 +67,9 @@ export function ScopeBar() {
             })}
           </div>
         ) : null}
+        <button type="button" className="btn-secondary ml-auto" onClick={resetFilters}>
+          Reset
+        </button>
       </div>
     </section>
   );

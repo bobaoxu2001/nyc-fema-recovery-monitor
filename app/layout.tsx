@@ -33,7 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <FilterProvider>
             <div className="flex min-h-screen flex-col">
               <SiteHeader />
-              <main className="page-wrap flex-1 py-6">{children}</main>
+              <main className="page-wrap flex-1 py-4">{children}</main>
               <SiteFooter />
             </div>
           </FilterProvider>

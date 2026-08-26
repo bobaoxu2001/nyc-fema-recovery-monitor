@@ -1,7 +1,7 @@
 "use client";
 
 import { canonicalMeta } from "@/lib/canonical";
-import { formatProvenanceCount, formatProvenanceUsd, formatRefreshedAt } from "@/lib/format";
+import { formatJoinCoverage, formatPercent, formatProvenanceCount, formatProvenanceUsd, formatRefreshedAt } from "@/lib/format";
 import { flagDefinitions } from "@/lib/flags";
 import { DUPLICATE_LOOKING_RULE, NYC_APPLICANT_CITIES, NYC_BOROUGH_COUNTIES, NYC_NAME_PHRASES } from "@/lib/nyc-rules";
 import { useData } from "./providers";
@@ -13,6 +13,10 @@ export function MethodologyContent() {
   const apiCount = proven.sourceCheck?.openFemaCount ?? proven.recordCount;
   const matched = proven.sourceCheck?.matchedCount;
   const join = proven.joinQuality;
+  const mix = proven.flagMix;
+  const flaggedShare =
+    mix && proven.recordCount ? mix.flaggedCount / proven.recordCount : null;
+  const stability = join?.nameStabilityAudit;
 
   return (
     <div className="space-y-6">
@@ -121,24 +125,54 @@ export function MethodologyContent() {
             <p className="font-medium text-navy">Join quality</p>
             <ul className="mt-2 list-disc space-y-1 pl-5 text-ink">
               <li>
-                Applicant join ({join.applicantJoinKey}):{" "}
-                {formatProvenanceCount(join.applicantJoinMatched)} /{" "}
-                {formatProvenanceCount(join.applicantJoinTotal)}
+                Applicant join matched ({join.applicantJoinKey}):{" "}
+                {formatJoinCoverage(join.applicantJoinMatched, join.applicantJoinTotal)}
               </li>
               <li>
-                Disaster title join ({join.disasterTitleJoinKey}):{" "}
-                {formatProvenanceCount(join.disasterTitleMatched)} /{" "}
-                {formatProvenanceCount(join.disasterTitleTotal)}
+                Disaster title join matched ({join.disasterTitleJoinKey}):{" "}
+                {formatJoinCoverage(join.disasterTitleMatched, join.disasterTitleTotal)}
               </li>
               <li>Missing gmProjectId: {formatProvenanceCount(join.missingGmProjectId)}</li>
               <li>Missing federalShareObligated: {formatProvenanceCount(join.missingFederalShare)}</li>
               <li>
-                Applicant IDs: {formatProvenanceCount(join.distinctApplicantId)} distinct{" "}
-                <code>applicantId</code> values. Distinct source names:{" "}
+                Applicants: {formatProvenanceCount(join.distinctApplicantId)} distinct{" "}
+                <code>applicantId</code> values. Distinct interned names:{" "}
                 {formatProvenanceCount(join.distinctApplicantName)}. This is not a
                 legal-entity count.
               </li>
             </ul>
+            {stability ? (
+              <div className="mt-3">
+                <p className="font-medium text-navy">Applicant ID / name stability</p>
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-ink">
+                  <li>
+                    One-time audit of {stability.source} on{" "}
+                    {formatRefreshedAt(stability.auditedAt)}.
+                  </li>
+                  <li>
+                    Applicant rows covering snapshot IDs:{" "}
+                    {formatProvenanceCount(stability.applicantRowsForSnapshotIds)}
+                  </li>
+                  <li>
+                    IDs with more than one exact source name across disasters:{" "}
+                    {formatJoinCoverage(
+                      stability.idsWithMultipleExactNames,
+                      join.distinctApplicantId,
+                    )}
+                  </li>
+                  <li>
+                    Exact source names mapping to more than one applicantId:{" "}
+                    {formatProvenanceCount(stability.exactNamesWithMultipleIds)}
+                  </li>
+                  <li>
+                    Interned dashboard labels are one-to-one with{" "}
+                    <code>applicantId</code>
+                    {join.internedExactNameOneToOne ? "." : " in this snapshot."} The
+                    same ID can still carry name variants in the source file.
+                  </li>
+                </ul>
+              </div>
+            ) : null}
           </div>
         ) : null}
       </section>
@@ -181,8 +215,22 @@ export function MethodologyContent() {
           Amount flags use the disaster as the peer group. A Sandy worksheet is
           compared with other Sandy worksheets. The flag does not change when the
           page is filtered to one applicant. High-dollar and Extreme are mutually
-          exclusive.
+          exclusive. A 95th-percentile cut surfaces roughly the top twentieth of
+          each disaster, so a review queue near 5% of worksheets is partly by
+          design. It is not an estimated error or ineligibility rate.
         </p>
+        {mix ? (
+          <p className="mt-2 text-sm text-ink">
+            In this snapshot: {formatProvenanceCount(mix.flaggedCount)} flagged
+            worksheets
+            {flaggedShare != null ? ` (${formatPercent(flaggedShare)})` : ""}.{" "}
+            {formatProvenanceCount(mix.amountScreen)} are the materiality screen (
+            {formatProvenanceCount(mix.highDollar)} high-dollar,{" "}
+            {formatProvenanceCount(mix.extreme)} extreme) and{" "}
+            {formatProvenanceCount(mix.negative)} are negative federal-share
+            records.
+          </p>
+        ) : null}
         <ul className="mt-3 space-y-3 text-sm">
           {flags.map((flag) => (
             <li key={flag.code} className="border-b border-rule pb-3">
@@ -221,6 +269,14 @@ Grant portfolio monitoring → Exception review → Reconciliation → Reporting
           <li>
             Flags are screening indicators only. They are not findings of
             non-compliance, fraud, grant ineligibility, or improper expenditure.
+          </li>
+          <li>
+            Federal-share amounts are nominal and already net of the applicable
+            cost share; they are not a like-for-like comparison across disasters.
+          </li>
+          <li>
+            This snapshot is a current-state obligated portfolio, not a measure of
+            recovery progress over time.
           </li>
         </ul>
       </section>

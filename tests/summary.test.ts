@@ -19,6 +19,8 @@ describe("canonical summary", () => {
     expect(meta.joinQuality?.missingGmProjectId).toBe(0);
     expect(meta.joinQuality?.missingFederalShare).toBe(0);
     expect(meta.joinQuality?.distinctApplicantId).toBe(4819);
+    expect(meta.disclaimer).not.toMatch(/interview demonstration/i);
+    expect(meta.applicantCountDefinition).toMatch(/applicantId/);
   });
 
   it("keeps All New York and NYC-related denominators separate", () => {
@@ -42,6 +44,36 @@ describe("canonical summary", () => {
     expect(shortcuts.find((item) => item.label === "Hurricane Ida")?.key).toBe("4615");
     expect(shortcuts.find((item) => item.label === "COVID-19")?.key).toBe("4480");
     expect(shortcuts.find((item) => item.label === "Hurricane Sandy")?.declaration).toBe("DR-4085-NY");
+  });
+
+  it("precomputes flagged and applicant counts for interview disasters", () => {
+    const byKey = Object.fromEntries(
+      CANONICAL_SUMMARY.allNy.byDisaster.map((row) => [row.key, row]),
+    );
+    for (const key of ["4085", "4615", "4480"]) {
+      expect(byKey[key]?.flaggedCount).toBeGreaterThan(0);
+      expect(byKey[key]?.applicantCount).toBeGreaterThan(0);
+    }
+    expect(CANONICAL_SUMMARY.allNy.applicantCount).toBe(4819);
+    expect(CANONICAL_SUMMARY.allNy.flaggedCount).toBe(2963);
+  });
+
+  it("records the materiality-screen mix and applicant name-stability audit", () => {
+    const mix = CANONICAL_SUMMARY.meta.flagMix;
+    expect(mix?.flaggedCount).toBe(2963);
+    expect(mix?.amountScreen).toBe(2935);
+    expect(mix?.highDollar).toBe(2327);
+    expect(mix?.extreme).toBe(608);
+    expect(mix?.negative).toBe(28);
+    expect(mix?.missing).toBe(0);
+    expect(mix?.duplicateLooking).toBe(0);
+    expect(mix!.highDollar + mix!.extreme + mix!.negative).toBe(mix!.flaggedCount);
+
+    const join = CANONICAL_SUMMARY.meta.joinQuality;
+    expect(join?.internedExactNameOneToOne).toBe(true);
+    expect(join?.nameStabilityAudit?.idsWithMultipleExactNames).toBe(523);
+    expect(join?.nameStabilityAudit?.exactNamesWithMultipleIds).toBe(0);
+    expect(join?.nameStabilityAudit?.applicantRowsForSnapshotIds).toBe(14908);
   });
 });
 
