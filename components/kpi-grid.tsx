@@ -55,14 +55,16 @@ const ITEMS: Array<{
   },
 ];
 
-export function KpiGrid({ kpis }: { kpis: Kpis }) {
+export function KpiGrid({ kpis, hydrating = false }: { kpis: Kpis; hydrating?: boolean }) {
   return (
     <section aria-label="Portfolio snapshot">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {ITEMS.map((item) => {
           const raw = kpis[item.key];
-          const display =
-            item.money
+          const pending = hydrating && item.key === "flaggedCount";
+          const display = pending
+            ? "—"
+            : item.money
               ? formatCompactUsd(typeof raw === "number" ? raw : null)
               : formatCount(typeof raw === "number" ? raw : null);
           return (

@@ -30,6 +30,8 @@ sys.path.insert(0, str(SCRIPT_DIR))
 from fema_pipeline import (  # noqa: E402
     SOURCE,
     build_meta,
+    build_summary,
+    encode_public_snapshot,
     transform_projects,
     validate_snapshot,
     write_json,
@@ -125,6 +127,23 @@ def main() -> int:
     session = requests.Session()
     session.headers.update({"User-Agent": USER_AGENT, "Accept": "application/json"})
 
+    print("Checking live OpenFEMA count (no API key)...")
+    count_payload = request_json(
+        session,
+        SOURCE["endpoint"],
+        {
+            "$filter": "stateAbbreviation eq 'NY'",
+            "$count": "true",
+            "$top": "1",
+            "$select": "gmProjectId",
+        },
+    )
+    api_meta = count_payload.get("metadata") or {}
+    api_count = api_meta.get("count")
+    api_rundate = api_meta.get("rundate")
+    print(f"  OpenFEMA NY count: {api_count}")
+    print(f"  OpenFEMA rundate: {api_rundate}")
+
     print("Fetching Public Assistance Funded Projects Details v2 (NY)...")
     project_select = ",".join(
         [
@@ -182,38 +201,46 @@ def main() -> int:
     print("Transforming snapshot...")
     transformed = transform_projects(projects, applicants, declarations)
     validation = validate_snapshot(projects, transformed)
-    meta = build_meta(validation, retrieved_at)
+    if api_count is not None and int(api_count) != len(projects):
+        validation["issues"].append(
+            f"OpenFEMA $count was {api_count} but the download contained {len(projects)} NY rows."
+        )
+        validation["ok"] = False
 
-    snapshot = {
-        "meta": meta,
-        "disasters": transformed["disasters"],
-        "applicants": transformed["applicants"],
-        "projects": transformed["projects"],
-        "validation": {
-            k: v
-            for k, v in validation.items()
-            if k != "identity"
-        },
+    source_check = {
+        "apiKeyRequired": False,
+        "endpoint": SOURCE["endpoint"],
+        "page": SOURCE["page"],
+        "filter": "stateAbbreviation eq 'NY'",
+        "openFemaCount": api_count,
+        "openFemaRundate": api_rundate,
+        "retrievedRows": len(projects),
+        "matchedCount": api_count == len(projects),
     }
+    meta = build_meta(validation, retrieved_at, source_check)
+    public_snapshot = encode_public_snapshot(transformed, meta)
+    summary = build_summary(transformed, meta)
 
-    processed_path = PROCESSED_DIR / "projects.json"
     public_path = PUBLIC_DATA_DIR / "projects.json"
+    summary_path = PUBLIC_DATA_DIR / "summary.json"
     validation_path = PROCESSED_DIR / "validation.json"
     meta_path = PROCESSED_DIR / "meta.json"
 
     print("Writing files...")
-    write_json(str(processed_path), snapshot)
-    write_json(str(public_path), snapshot)
-    write_json(str(validation_path), {"retrievedAt": retrieved_at, **validation})
+    write_json(str(public_path), public_snapshot)
+    write_json(str(summary_path), summary)
+    write_json(str(validation_path), {"retrievedAt": retrieved_at, "sourceCheck": source_check, **validation})
     write_json(str(meta_path), meta)
 
     print("\n=== Validation report ===")
     print(json.dumps(validation, indent=2, default=str))
+    print("sourceCheck", json.dumps(source_check, indent=2))
+    print(f"public snapshot bytes: {public_path.stat().st_size:,}")
     if not validation["ok"]:
         print("Validation completed with issues.", file=sys.stderr)
         return 1
-    print(f"\nWrote {processed_path}")
-    print(f"Wrote {public_path}")
+    print(f"\nWrote {public_path}")
+    print(f"Wrote {summary_path}")
     print("OK")
     return 0
 

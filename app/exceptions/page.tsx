@@ -7,9 +7,9 @@ import { usePortfolio } from "@/components/providers";
 import { ErrorState, LoadingState } from "@/components/status-panels";
 
 export default function ExceptionsPage() {
-  const { loading, error } = usePortfolio();
+  const { loading, hydrating, error } = usePortfolio();
 
-  if (loading) {
+  if (loading || hydrating) {
     return <LoadingState label="Loading exception monitor" />;
   }
   if (error) {

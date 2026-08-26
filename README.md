@@ -43,7 +43,7 @@ Joined to:
 - [Public Assistance Applicants v1](https://www.fema.gov/openfema-data-page/public-assistance-applicants-v1) on `disasterNumber` + `applicantId` for applicant names
 - [Disaster Declarations Summaries v2](https://www.fema.gov/openfema-data-page/disaster-declarations-summaries-v2) on `disasterNumber` for disaster titles
 
-The current snapshot contains **59,291** New York project worksheets and about **$41.1B** in federal share obligated. OpenFEMA refreshes this dataset daily. This app uses a processed local snapshot so filters stay fast.
+The current snapshot contains **59,291** New York project worksheets and about **$41.1B** in federal share obligated. Rows are retrieved from the official OpenFEMA API with **no API key**. OpenFEMA refreshes this dataset daily. This app stores a processed snapshot so filters stay fast, then checks that the downloaded row count matches OpenFEMA’s `$count`.
 
 ## Methodology
 
@@ -153,7 +153,7 @@ The app is a standard Next.js site hosted on Vercel.
 npx vercel --prod --yes
 ```
 
-`public/data/projects.json` must be present before the build. The first browser load fetches that snapshot (~23MB uncompressed; hosts typically gzip it in transit). After that, all filtering is client-side.
+`public/data/summary.json` and `public/data/projects.json` must be present before the build. The overview can render totals from the small summary file while the worksheet snapshot loads. After that, all filtering is client-side. No FEMA API key is used or required.
 
 ## Interview notes
 

@@ -46,10 +46,15 @@ export function MethodologyContent() {
           </li>
         </ul>
         <p className="mt-3 text-sm text-ink-soft">
-          Filter used for projects: <code>stateAbbreviation eq &apos;NY&apos;</code>. Data last
-          refreshed {formatRefreshedAt(meta?.retrievedAt)}. Snapshot size:{" "}
-          {formatCount(meta?.recordCount ?? 0)} project worksheets,{" "}
-          {formatCompactUsd(meta?.federalShareSum ?? null)} federal share obligated.
+          Retrieved from the official OpenFEMA API with no API key. Filter:{" "}
+          <code>{meta?.sourceCheck?.filter || "stateAbbreviation eq 'NY'"}</code>.
+          OpenFEMA reported {formatCount(meta?.sourceCheck?.openFemaCount ?? meta?.recordCount ?? 0)}{" "}
+          New York rows
+          {meta?.sourceCheck?.matchedCount === false
+            ? "; the downloaded file did not match that count and should be refreshed."
+            : "; the downloaded file matched that count."}{" "}
+          Data last refreshed {formatRefreshedAt(meta?.retrievedAt)}. Federal share
+          obligated in the snapshot: {formatCompactUsd(meta?.federalShareSum ?? null)}.
         </p>
         <p className="mt-2 text-sm text-ink-soft">
           OpenFEMA states that the financial information is derived from Grants

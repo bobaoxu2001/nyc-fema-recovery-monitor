@@ -28,29 +28,41 @@ export type Applicant = {
 };
 
 export type CompactProject = {
-  id: string;
+  id?: string;
   gm: number | string | null;
   d: number;
   pw: number | null;
   t: string;
   a: number;
-  cc: string;
-  cat: string;
-  st: string;
-  ps: string;
-  sz: string;
-  co: string;
+  cc: string | number;
+  cat: string | number;
+  st: string | number;
+  ps: string | number;
+  sz: string | number;
+  co: string | number;
   pa: number | null;
   fs: number | null;
   to: number | null;
   dd: string | null;
   fo: string | null;
   lo: string | null;
-  it: string;
-  nyc: 0 | 1;
-  nr: string[];
-  dg: string | null;
-  mf: string[];
+  it: string | number;
+  nyc?: 0 | 1;
+  nr?: string[];
+  dg?: string | null;
+  mf?: string[];
+};
+
+export type ProjectRow = Array<string | number | null>;
+
+export type SnapshotLookups = {
+  cc: string[];
+  cat: string[];
+  st: string[];
+  ps: string[];
+  sz: string[];
+  co: string[];
+  it: string[];
 };
 
 export type SnapshotMeta = {
@@ -85,13 +97,48 @@ export type SnapshotMeta = {
   applicantCount: number;
   disasterCount: number;
   federalShareSum: number;
+  sourceCheck?: {
+    apiKeyRequired?: boolean;
+    endpoint?: string;
+    page?: string;
+    filter?: string;
+    openFemaCount?: number | null;
+    openFemaRundate?: string | null;
+    retrievedRows?: number;
+    matchedCount?: boolean;
+  };
 };
 
 export type Snapshot = {
   meta: SnapshotMeta;
   disasters: Disaster[];
   applicants: Applicant[];
-  projects: CompactProject[];
+  projects: CompactProject[] | ProjectRow[];
+  lookups?: SnapshotLookups;
+  fields?: string[];
+  nyc?: Record<string, string[]>;
+  missing?: Record<string, string[]>;
+  duplicates?: Record<string, string>;
+};
+
+export type PortfolioSummarySlice = {
+  projectCount: number;
+  federalShare: number;
+  applicantCount: number;
+  disasterCount: number;
+  medianProject: number | null;
+  averageProject: number | null;
+  largestProject: number | null;
+  categoryCount: number;
+  byDisaster: NamedTotal[];
+  byApplicant: NamedTotal[];
+  byCategory: NamedTotal[];
+};
+
+export type PortfolioSummary = {
+  meta: SnapshotMeta;
+  allNy: PortfolioSummarySlice;
+  nyc: PortfolioSummarySlice;
 };
 
 export type Project = {

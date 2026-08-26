@@ -8,6 +8,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from fema_pipeline import (  # noqa: E402
     attach_duplicate_groups,
     choose_project_identifier,
+    encode_public_snapshot,
     missing_critical_fields,
     parse_number,
     transform_projects,
@@ -152,6 +153,10 @@ class TransformTests(unittest.TestCase):
         report = validate_snapshot(projects, transformed)
         self.assertTrue(report["ok"])
         self.assertEqual(report["federalShare"]["sum"], 3750000)
+        encoded = encode_public_snapshot(transformed, {"recordCount": 1})
+        self.assertEqual(encoded["fields"][0], "gm")
+        self.assertEqual(encoded["projects"][0][0], 111)
+        self.assertEqual(encoded["nyc"]["111"], ["borough_county", "applicant_city", "applicant_name"])
 
 
 if __name__ == "__main__":

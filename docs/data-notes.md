@@ -1,12 +1,14 @@
 # Data notes
 
-Snapshot retrieved: 2026-08-26.
+Snapshot retrieved from the official OpenFEMA API (no API key).
 
 | Item | Value |
 | --- | --- |
 | Source | OpenFEMA Public Assistance Funded Projects Details v2 |
-| Geography | `stateAbbreviation = NY` |
-| Rows | 59,291 |
+| Endpoint | https://www.fema.gov/api/open/v2/PublicAssistanceFundedProjectsDetails |
+| Geography | `stateAbbreviation eq 'NY'` |
+| OpenFEMA `$count` | 59,291 |
+| Rows downloaded | 59,291 (matched) |
 | Unique `gmProjectId` | 59,291 |
 | Applicants (joined) | 4,819 |
 | Disasters | 61 |

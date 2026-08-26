@@ -33,10 +33,13 @@ export function SiteHeader() {
             </p>
           </div>
           <div className="rounded border border-rule bg-paper px-3 py-2 text-right text-xs text-ink-soft">
-            <div>New York State OpenFEMA snapshot</div>
+            <div>OpenFEMA API snapshot · no key</div>
             <div className="mt-1 text-ink">
               Data last refreshed: {formatRefreshedAt(meta?.retrievedAt)}
             </div>
+            {meta?.sourceCheck?.filter ? (
+              <div className="mt-1">Filter: {meta.sourceCheck.filter}</div>
+            ) : null}
           </div>
         </div>
         <nav

@@ -34,11 +34,11 @@ function Select({
 }
 
 export function FilterBar() {
-  const { allProjects, filters, setFilters, resetFilters, meta } = usePortfolio();
+  const { allProjects, filters, setFilters, resetFilters, meta, summary } = usePortfolio();
 
-  const disasters = useMemo(
-    () =>
-      uniqueSorted(
+  const disasters = useMemo(() => {
+    if (allProjects.length) {
+      return uniqueSorted(
         allProjects.map(
           (project) =>
             `${project.disasterNumber}\t${project.femaDeclarationString}\t${project.disasterTitle}`,
@@ -46,9 +46,14 @@ export function FilterBar() {
       ).map((value) => {
         const [number, code, title] = value.split("\t");
         return { number, label: `${code} — ${title}` };
-      }),
-    [allProjects],
-  );
+      });
+    }
+    const slice = filters.geography === "nyc" ? summary?.nyc : summary?.allNy;
+    return (slice?.byDisaster || []).map((row) => ({
+      number: row.key,
+      label: row.name,
+    }));
+  }, [allProjects, filters.geography, summary]);
 
   const applicants = useMemo(() => {
     const applicantTotals = new Map<string, { name: string; amount: number }>();

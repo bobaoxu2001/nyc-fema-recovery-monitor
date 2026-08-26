@@ -1,12 +1,65 @@
-import type { CompactProject, Disaster, Project, Snapshot } from "./types";
+import type {
+  CompactProject,
+  Disaster,
+  Project,
+  ProjectRow,
+  Snapshot,
+  SnapshotLookups,
+} from "./types";
+
+const DEFAULT_FIELDS = [
+  "gm",
+  "d",
+  "pw",
+  "t",
+  "a",
+  "cc",
+  "cat",
+  "st",
+  "ps",
+  "sz",
+  "co",
+  "pa",
+  "fs",
+  "to",
+  "dd",
+  "fo",
+  "lo",
+  "it",
+] as const;
+
+function lookupText(
+  table: string[] | undefined,
+  value: string | number | null | undefined,
+): string {
+  if (typeof value === "number" && table) {
+    return table[value] ?? "";
+  }
+  if (typeof value === "string") return value;
+  return "";
+}
+
+function rowToCompact(
+  row: CompactProject | ProjectRow,
+  fields: string[],
+): CompactProject {
+  if (!Array.isArray(row)) return row;
+  const obj: Record<string, unknown> = {};
+  fields.forEach((field, index) => {
+    obj[field] = row[index];
+  });
+  return obj as CompactProject;
+}
 
 export function expandProjects(snapshot: Snapshot): Project[] {
   const disasterByNumber = new Map<number, Disaster>();
   for (const disaster of snapshot.disasters) {
     disasterByNumber.set(disaster.disasterNumber, disaster);
   }
-
-  return snapshot.projects.map((row) => expandProject(row, snapshot, disasterByNumber));
+  const fields = snapshot.fields ?? [...DEFAULT_FIELDS];
+  return snapshot.projects.map((row) =>
+    expandProject(rowToCompact(row, fields), snapshot, disasterByNumber),
+  );
 }
 
 export function expandProject(
@@ -14,42 +67,54 @@ export function expandProject(
   snapshot: Snapshot,
   disasterByNumber?: Map<number, Disaster>,
 ): Project {
+  const lookups: SnapshotLookups | undefined = snapshot.lookups;
   const applicant = snapshot.applicants[row.a];
-  const disaster = disasterByNumber?.get(row.d) ?? snapshot.disasters.find((item) => item.disasterNumber === row.d);
+  const disaster =
+    disasterByNumber?.get(row.d) ??
+    snapshot.disasters.find((item) => item.disasterNumber === row.d);
   const declarationDate = row.dd ?? disaster?.declarationDate ?? null;
+  const gm = row.gm;
+  const id = row.id || (gm != null && gm !== "" ? String(gm) : `${row.d}-${row.pw}-${row.a}`);
+  const category = lookupText(lookups?.cat, row.cat) || lookupText(lookups?.cc, row.cc) || "Unspecified";
+  const categoryCode = lookupText(lookups?.cc, row.cc);
+  const nycReasons = snapshot.nyc?.[id] || row.nr || [];
   return {
-    id: row.id,
-    gmProjectId: row.gm,
+    id,
+    gmProjectId: gm,
     disasterNumber: row.d,
-    disasterTitle: disaster?.title || `${row.it || "Disaster"} ${row.d}`,
+    disasterTitle: disaster?.title || `${lookupText(lookups?.it, row.it) || "Disaster"} ${row.d}`,
     femaDeclarationString: disaster?.femaDeclarationString || `DR-${row.d}`,
     pwNumber: row.pw,
     title: row.t,
     applicantId: applicant?.applicantId || "",
     applicantName: applicant?.name || "Unknown applicant",
     applicantCity: applicant?.city ?? null,
-    categoryCode: row.cc,
-    category: row.cat || row.cc || "Unspecified",
-    status: row.st,
-    processStep: row.ps,
-    size: row.sz,
-    county: row.co,
+    categoryCode,
+    category,
+    status: lookupText(lookups?.st, row.st),
+    processStep: lookupText(lookups?.ps, row.ps),
+    size: lookupText(lookups?.sz, row.sz),
+    county: lookupText(lookups?.co, row.co),
     projectAmount: row.pa,
     federalShare: row.fs,
     totalObligated: row.to,
     declarationDate,
-    declarationYear: declarationDate ? Number(declarationDate.slice(0, 4)) || null : disaster?.year ?? null,
+    declarationYear: declarationDate
+      ? Number(declarationDate.slice(0, 4)) || null
+      : disaster?.year ?? null,
     firstObligationDate: row.fo,
     lastObligationDate: row.lo,
-    incidentType: row.it || disaster?.incidentType || "",
-    nycRelated: row.nyc === 1,
-    nycReasons: row.nr || [],
-    duplicateGroup: row.dg,
-    missingFields: row.mf || [],
+    incidentType: lookupText(lookups?.it, row.it) || disaster?.incidentType || "",
+    nycRelated: nycReasons.length > 0 || row.nyc === 1,
+    nycReasons,
+    duplicateGroup: snapshot.duplicates?.[id] ?? row.dg ?? null,
+    missingFields: snapshot.missing?.[id] || row.mf || [],
   };
 }
 
-export function projectDisplayId(project: Pick<Project, "femaDeclarationString" | "pwNumber" | "gmProjectId" | "id">): string {
+export function projectDisplayId(
+  project: Pick<Project, "femaDeclarationString" | "pwNumber" | "gmProjectId" | "id">,
+): string {
   if (project.gmProjectId != null && project.gmProjectId !== "") {
     return String(project.gmProjectId);
   }

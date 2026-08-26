@@ -457,10 +457,20 @@ def validate_snapshot(
     return report
 
 
-def build_meta(validation: dict[str, Any], retrieved_at: str) -> dict[str, Any]:
+def build_meta(
+    validation: dict[str, Any],
+    retrieved_at: str,
+    source_check: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     return {
         "title": "NYC FEMA Public Assistance Recovery Monitor",
         "retrievedAt": retrieved_at,
+        "sourceCheck": source_check
+        or {
+            "apiKeyRequired": False,
+            "filter": "stateAbbreviation eq 'NY'",
+            "endpoint": SOURCE["endpoint"],
+        },
         "geography": "New York State",
         "geographyNote": (
             "The snapshot includes all OpenFEMA Public Assistance funded projects with "
@@ -491,3 +501,179 @@ def write_json(path: str, payload: Any) -> None:
     with open(path, "w", encoding="utf-8") as handle:
         json.dump(payload, handle, ensure_ascii=False, separators=(",", ":"))
         handle.write("\n")
+
+
+PUBLIC_FIELDS = (
+    "gm",
+    "d",
+    "pw",
+    "t",
+    "a",
+    "cc",
+    "cat",
+    "st",
+    "ps",
+    "sz",
+    "co",
+    "pa",
+    "fs",
+    "to",
+    "dd",
+    "fo",
+    "lo",
+    "it",
+)
+
+
+def round_money(value: Any) -> float | None:
+    number = parse_number(value)
+    if number is None:
+        return None
+    return round(number, 2)
+
+
+def _intern(values: list[str]) -> tuple[list[int], list[str]]:
+    table: list[str] = []
+    index: dict[str, int] = {}
+    out: list[int] = []
+    for value in values:
+        key = value or ""
+        if key not in index:
+            index[key] = len(table)
+            table.append(key)
+        out.append(index[key])
+    return out, table
+
+
+def encode_public_snapshot(transformed: dict[str, Any], meta: dict[str, Any]) -> dict[str, Any]:
+    """Pack worksheets as interned arrays so the browser snapshot stays small."""
+    projects = transformed["projects"]
+    interned: dict[str, list[int]] = {}
+    lookups: dict[str, list[str]] = {}
+    for field in ("cc", "cat", "st", "ps", "sz", "co", "it"):
+        column, table = _intern([str(row.get(field) or "") for row in projects])
+        interned[field] = column
+        lookups[field] = table
+
+    nyc: dict[str, list[str]] = {}
+    missing: dict[str, list[str]] = {}
+    duplicates: dict[str, str] = {}
+    rows: list[list[Any]] = []
+    for i, row in enumerate(projects):
+        gm = row.get("gm")
+        key = str(gm if gm is not None else row.get("id"))
+        rows.append(
+            [
+                gm,
+                row.get("d"),
+                row.get("pw"),
+                row.get("t"),
+                row.get("a"),
+                interned["cc"][i],
+                interned["cat"][i],
+                interned["st"][i],
+                interned["ps"][i],
+                interned["sz"][i],
+                interned["co"][i],
+                round_money(row.get("pa")),
+                round_money(row.get("fs")),
+                round_money(row.get("to")),
+                row.get("dd"),
+                row.get("fo"),
+                row.get("lo"),
+                interned["it"][i],
+            ]
+        )
+        if row.get("nyc") == 1:
+            nyc[key] = row.get("nr") or ["tagged"]
+        if row.get("mf"):
+            missing[key] = row["mf"]
+        if row.get("dg"):
+            duplicates[key] = row["dg"]
+
+    encoded: dict[str, Any] = {
+        "meta": meta,
+        "disasters": transformed["disasters"],
+        "applicants": transformed["applicants"],
+        "lookups": lookups,
+        "fields": list(PUBLIC_FIELDS),
+        "projects": rows,
+    }
+    if nyc:
+        encoded["nyc"] = nyc
+    if missing:
+        encoded["missing"] = missing
+    if duplicates:
+        encoded["duplicates"] = duplicates
+    return encoded
+
+
+def _named_totals(
+    rows: list[dict[str, Any]],
+    key_fn,
+    name_fn,
+    limit: int | None = None,
+) -> list[dict[str, Any]]:
+    total = sum(row.get("fs") or 0 for row in rows)
+    grouped: dict[Any, dict[str, Any]] = {}
+    for row in rows:
+        key = key_fn(row)
+        current = grouped.get(key)
+        if current is None:
+            current = {"key": str(key), "name": name_fn(row), "projects": 0, "federalShare": 0.0}
+            grouped[key] = current
+        current["projects"] += 1
+        current["federalShare"] += row.get("fs") or 0
+    ranked = sorted(grouped.values(), key=lambda item: item["federalShare"], reverse=True)
+    if limit is not None:
+        ranked = ranked[:limit]
+    for item in ranked:
+        item["federalShare"] = round(item["federalShare"], 2)
+        item["share"] = (item["federalShare"] / total) if total else 0
+    return ranked
+
+
+def build_summary(transformed: dict[str, Any], meta: dict[str, Any]) -> dict[str, Any]:
+    applicants = transformed["applicants"]
+    disasters = {item["disasterNumber"]: item for item in transformed["disasters"]}
+    projects = transformed["projects"]
+
+    def slice_stats(rows: list[dict[str, Any]]) -> dict[str, Any]:
+        amounts = [row["fs"] for row in rows if row.get("fs") is not None]
+        return {
+            "projectCount": len(rows),
+            "federalShare": round(sum(amounts), 2) if amounts else 0,
+            "applicantCount": len({applicants[row["a"]]["applicantId"] for row in rows if row.get("a") is not None}),
+            "disasterCount": len({row.get("d") for row in rows}),
+            "medianProject": percentile(amounts, 0.5) if amounts else None,
+            "averageProject": (sum(amounts) / len(amounts)) if amounts else None,
+            "largestProject": max(amounts) if amounts else None,
+            "categoryCount": len({row.get("cat") for row in rows if row.get("cat")}),
+            "byDisaster": _named_totals(
+                rows,
+                key_fn=lambda row: row.get("d"),
+                name_fn=lambda row: (
+                    f"{(disasters.get(row.get('d')) or {}).get('femaDeclarationString') or row.get('d')}: "
+                    f"{(disasters.get(row.get('d')) or {}).get('title') or ''}"
+                ),
+                limit=12,
+            ),
+            "byApplicant": _named_totals(
+                rows,
+                key_fn=lambda row: applicants[row["a"]]["applicantId"] if row.get("a") is not None else "",
+                name_fn=lambda row: applicants[row["a"]]["name"] if row.get("a") is not None else "Unknown applicant",
+                limit=15,
+            ),
+            "byCategory": _named_totals(
+                rows,
+                key_fn=lambda row: row.get("cat") or "Unspecified",
+                name_fn=lambda row: row.get("cat") or "Unspecified",
+            ),
+        }
+
+    nyc_rows = [row for row in projects if row.get("nyc") == 1]
+    return {
+        "meta": meta,
+        "allNy": slice_stats(projects),
+        "nyc": slice_stats(nyc_rows),
+    }

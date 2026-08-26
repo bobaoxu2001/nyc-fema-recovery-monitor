@@ -13,13 +13,13 @@ import { formatCompactUsd, formatCount } from "@/lib/format";
 import Link from "next/link";
 
 export default function OverviewPage() {
-  const { loading, error, meta, kpis, byDisaster, byApplicant, byCategory, filtered, signals } =
+  const { loading, hydrating, error, meta, kpis, byDisaster, byApplicant, byCategory, filtered, signals } =
     usePortfolio();
 
   if (loading) {
     return <LoadingState label="Loading New York Public Assistance snapshot" />;
   }
-  if (error) {
+  if (error && !meta) {
     return <ErrorState message={error} />;
   }
 
@@ -40,7 +40,13 @@ export default function OverviewPage() {
         </p>
       </section>
       <FilterBar />
-      <KpiGrid kpis={kpis} />
+      {hydrating ? (
+        <p className="text-xs text-ink-soft">
+          Totals below are from the OpenFEMA snapshot summary. The full worksheet
+          file is still loading.
+        </p>
+      ) : null}
+      <KpiGrid kpis={kpis} hydrating={hydrating} />
       <DisasterChart rows={byDisaster} />
       <div className="grid gap-4 lg:grid-cols-2">
         <ApplicantTable rows={byApplicant} />
@@ -52,7 +58,11 @@ export default function OverviewPage() {
           Open exception monitor
         </Link>
       </div>
-      <ProjectTable projects={filtered} flagsById={signals.flagsById} />
+      {hydrating ? (
+        <LoadingState label="Loading project worksheets from the OpenFEMA snapshot" />
+      ) : (
+        <ProjectTable projects={filtered} flagsById={signals.flagsById} />
+      )}
     </div>
   );
 }

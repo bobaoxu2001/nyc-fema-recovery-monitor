@@ -7,9 +7,9 @@ import { usePortfolio } from "@/components/providers";
 import { ErrorState, LoadingState } from "@/components/status-panels";
 
 export default function ProjectsPage() {
-  const { loading, error, filtered, signals, kpis } = usePortfolio();
+  const { loading, hydrating, error, filtered, signals, kpis } = usePortfolio();
 
-  if (loading) {
+  if (loading || hydrating) {
     return <LoadingState label="Loading project worksheets" />;
   }
   if (error) {
