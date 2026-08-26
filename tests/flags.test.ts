@@ -13,6 +13,7 @@ function project(id: string, amount: number, extra: Partial<Project> = {}): Proj
     title: `Project ${id}`,
     applicantId: extra.applicantId || "a1",
     applicantName: extra.applicantName || "Applicant A",
+    applicantNameRaw: extra.applicantNameRaw || extra.applicantName || "Applicant A",
     applicantCity: "New York",
     categoryCode: "B",
     category: extra.category || "Emergency Protective Measures",

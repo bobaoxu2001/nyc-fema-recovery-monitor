@@ -14,6 +14,11 @@ describe("canonical summary", () => {
     expect(meta.sourceCheck?.apiKeyRequired).toBe(false);
     expect(meta.identifier.identifier).toBe("gmProjectId");
     expect(meta.retrievedAt).toMatch(/^2026-08-26/);
+    expect(meta.joinQuality?.applicantJoinMatched).toBe(59291);
+    expect(meta.joinQuality?.applicantJoinTotal).toBe(59291);
+    expect(meta.joinQuality?.missingGmProjectId).toBe(0);
+    expect(meta.joinQuality?.missingFederalShare).toBe(0);
+    expect(meta.joinQuality?.distinctApplicantId).toBe(4819);
   });
 
   it("keeps All New York and NYC-related denominators separate", () => {
@@ -21,6 +26,9 @@ describe("canonical summary", () => {
     expect(CANONICAL_SUMMARY.nyc.projectCount).toBe(3100);
     expect(CANONICAL_SUMMARY.nyc.federalShare).toBeLessThan(CANONICAL_SUMMARY.allNy.federalShare);
     expect(CANONICAL_SUMMARY.allNy.federalShare).toBe(metaSum());
+    expect(CANONICAL_SUMMARY.allNy.flaggedCount).toBeGreaterThan(0);
+    expect(CANONICAL_SUMMARY.nyc.flaggedCount).toBeGreaterThan(0);
+    expect(CANONICAL_SUMMARY.allNy.flaggedCount).toBeGreaterThan(CANONICAL_SUMMARY.nyc.flaggedCount);
   });
 
   it("derives interview disaster shortcuts from real titles", () => {
@@ -33,6 +41,7 @@ describe("canonical summary", () => {
     expect(shortcuts.find((item) => item.label === "Hurricane Sandy")?.key).toBe("4085");
     expect(shortcuts.find((item) => item.label === "Hurricane Ida")?.key).toBe("4615");
     expect(shortcuts.find((item) => item.label === "COVID-19")?.key).toBe("4480");
+    expect(shortcuts.find((item) => item.label === "Hurricane Sandy")?.declaration).toBe("DR-4085-NY");
   });
 });
 

@@ -5,7 +5,8 @@ import Link from "next/link";
 import { CHECKLIST_DISCLAIMER, INTERNAL_EVIDENCE } from "@/lib/checklist";
 import { projectDisplayId } from "@/lib/expand";
 import { formatDate, formatUsdPrecise } from "@/lib/format";
-import { nycKind, nycKindLabel, nycReasonText } from "@/lib/nyc";
+import { hasDisplayNormalization } from "@/lib/display-name";
+import { nycKind, nycKindLabel, nycReasonDetails } from "@/lib/nyc";
 import { OPENFEMA_DATASET_PAGE, openFemaProjectUrl } from "@/lib/openfema";
 import type { Project, ProjectFlag } from "@/lib/types";
 import { FlagStack } from "./flag-badge";
@@ -68,6 +69,9 @@ export function ProjectDetail({
         <h3 className="font-serif text-lg text-navy">Project summary</h3>
         <dl className="mt-2 grid gap-x-6 sm:grid-cols-2">
           <Fact label="Applicant" value={project.applicantName} />
+          {hasDisplayNormalization(project.applicantNameRaw) ? (
+            <Fact label="OpenFEMA source label" value={project.applicantNameRaw} />
+          ) : null}
           <Fact label="Applicant ID" value={project.applicantId || "—"} />
           <Fact label="Disaster" value={`${project.femaDeclarationString} — ${project.disasterTitle}`} />
           <Fact label="Incident type" value={project.incidentType || "—"} />
@@ -94,7 +98,18 @@ export function ProjectDetail({
             }
           />
         </dl>
-        <p className="mt-3 text-xs text-ink-soft">{nycReasonText(project.nycReasons)}</p>
+        {project.nycRelated ? (
+          <div className="mt-3 text-xs text-ink-soft">
+            <p className="font-medium text-ink">Why this worksheet is NYC-related</p>
+            <ul className="mt-1 list-disc pl-4">
+              {nycReasonDetails(project).map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <p className="mt-3 text-xs text-ink-soft">Not tagged as NYC-related under this prototype’s rules.</p>
+        )}
       </section>
 
       <section className="panel p-4">

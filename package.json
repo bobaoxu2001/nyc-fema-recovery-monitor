@@ -12,7 +12,7 @@
     "test": "vitest run && python3 -m unittest tests.test_pipeline",
     "test:js": "vitest run",
     "test:py": "python3 -m unittest tests.test_pipeline",
-    "data:refresh": "python3 scripts/fetch_fema_data.py"
+    "data:refresh": "python3 scripts/fetch_fema_data.py && python3 scripts/refresh_summary.py"
   },
   "dependencies": {
     "lucide-react": "^0.469.0",

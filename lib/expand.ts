@@ -1,3 +1,4 @@
+import { displayApplicantName } from "./display-name";
 import type {
   CompactProject,
   Disaster,
@@ -87,7 +88,8 @@ export function expandProject(
     pwNumber: row.pw,
     title: row.t,
     applicantId: applicant?.applicantId || "",
-    applicantName: applicant?.name || "Unknown applicant",
+    applicantName: displayApplicantName(applicant?.name || "Unknown applicant"),
+    applicantNameRaw: applicant?.name || "Unknown applicant",
     applicantCity: applicant?.city ?? null,
     categoryCode,
     category,

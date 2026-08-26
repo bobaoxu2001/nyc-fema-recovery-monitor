@@ -633,6 +633,48 @@ def _named_totals(
     return ranked
 
 
+def screening_flag_ids(rows: list[dict[str, Any]]) -> set[str]:
+    """Disaster-cohort amount flags plus missing / negative / duplicate-looking."""
+    by_disaster: dict[Any, list[dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        by_disaster[row.get("d")].append(row)
+    flagged: set[str] = set()
+    for cohort in by_disaster.values():
+        positive = [
+            row["fs"]
+            for row in cohort
+            if isinstance(row.get("fs"), (int, float)) and row["fs"] > 0
+        ]
+        p95 = percentile(positive, 0.95) if len(positive) >= 20 else None
+        p99 = percentile(positive, 0.99) if len(positive) >= 20 else None
+        for row in cohort:
+            row_id = str(row.get("id") or row.get("gm") or "")
+            amount = row.get("fs")
+            if isinstance(amount, (int, float)) and amount < 0:
+                flagged.add(row_id)
+            if row.get("mf"):
+                flagged.add(row_id)
+            if row.get("dg"):
+                flagged.add(row_id)
+            if isinstance(amount, (int, float)) and amount > 0 and p99 is not None and amount >= p99:
+                flagged.add(row_id)
+            elif isinstance(amount, (int, float)) and amount > 0 and p95 is not None and amount >= p95:
+                flagged.add(row_id)
+    return {item for item in flagged if item}
+
+
+def attach_flag_counts(slice_stats: dict[str, Any], rows: list[dict[str, Any]]) -> dict[str, Any]:
+    flagged = screening_flag_ids(rows)
+    by_disaster_rows: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        by_disaster_rows[str(row.get("d"))].append(row)
+    slice_stats["flaggedCount"] = len(flagged)
+    for item in slice_stats.get("byDisaster") or []:
+        key = str(item.get("key"))
+        item["flaggedCount"] = len(screening_flag_ids(by_disaster_rows.get(key, [])))
+    return slice_stats
+
+
 def build_summary(transformed: dict[str, Any], meta: dict[str, Any]) -> dict[str, Any]:
     applicants = transformed["applicants"]
     disasters = {item["disasterNumber"]: item for item in transformed["disasters"]}
@@ -672,8 +714,10 @@ def build_summary(transformed: dict[str, Any], meta: dict[str, Any]) -> dict[str
         }
 
     nyc_rows = [row for row in projects if row.get("nyc") == 1]
+    all_stats = attach_flag_counts(slice_stats(projects), projects)
+    nyc_stats = attach_flag_counts(slice_stats(nyc_rows), nyc_rows)
     return {
         "meta": meta,
-        "allNy": slice_stats(projects),
-        "nyc": slice_stats(nyc_rows),
+        "allNy": all_stats,
+        "nyc": nyc_stats,
     }

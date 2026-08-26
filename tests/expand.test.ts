@@ -68,6 +68,7 @@ describe("expandProjects", () => {
     const [project] = expandProjects(snapshot);
     expect(project.id).toBe("111");
     expect(project.applicantName).toBe("City of New York");
+    expect(project.applicantNameRaw).toBe("City of New York");
     expect(project.category).toBe("Parks, Recreational, and Other");
     expect(project.county).toBe("Kings County");
     expect(project.federalShare).toBe(3750000);

@@ -209,7 +209,7 @@ export function usePortfolio() {
       averageProject: summarySlice.averageProject,
       largestProject: summarySlice.largestProject,
       categoryCount: summarySlice.categoryCount,
-      flaggedCount: null,
+      flaggedCount: summarySlice.flaggedCount,
     };
     byDisaster = summarySlice.byDisaster;
     byApplicant = summarySlice.byApplicant;
@@ -224,7 +224,7 @@ export function usePortfolio() {
       averageProject: null,
       largestProject: null,
       categoryCount: null,
-      flaggedCount: null,
+      flaggedCount: disasterRow.flaggedCount ?? null,
     };
     byDisaster = summarySlice.byDisaster;
     byApplicant = [];
@@ -244,7 +244,7 @@ export function usePortfolio() {
       averageProject: summarySlice.averageProject,
       largestProject: summarySlice.largestProject,
       categoryCount: summarySlice.categoryCount,
-      flaggedCount: null,
+      flaggedCount: summarySlice.flaggedCount,
     };
     byDisaster = summarySlice.byDisaster;
     byApplicant = summarySlice.byApplicant;

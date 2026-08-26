@@ -3,6 +3,7 @@
 import { canonicalMeta } from "@/lib/canonical";
 import { formatProvenanceCount, formatProvenanceUsd, formatRefreshedAt } from "@/lib/format";
 import { flagDefinitions } from "@/lib/flags";
+import { DUPLICATE_LOOKING_RULE, NYC_APPLICANT_CITIES, NYC_BOROUGH_COUNTIES, NYC_NAME_PHRASES } from "@/lib/nyc-rules";
 import { useData } from "./providers";
 
 export function MethodologyContent() {
@@ -11,6 +12,7 @@ export function MethodologyContent() {
   const flags = flagDefinitions();
   const apiCount = proven.sourceCheck?.openFemaCount ?? proven.recordCount;
   const matched = proven.sourceCheck?.matchedCount;
+  const join = proven.joinQuality;
 
   return (
     <div className="space-y-6">
@@ -114,6 +116,31 @@ export function MethodologyContent() {
           adjustments or deobligations on the current worksheet. This details file
           does not expose a version-history grain.
         </p>
+        {join ? (
+          <div className="mt-4 rounded border border-rule bg-paper px-3 py-3 text-sm">
+            <p className="font-medium text-navy">Join quality</p>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-ink">
+              <li>
+                Applicant join ({join.applicantJoinKey}):{" "}
+                {formatProvenanceCount(join.applicantJoinMatched)} /{" "}
+                {formatProvenanceCount(join.applicantJoinTotal)}
+              </li>
+              <li>
+                Disaster title join ({join.disasterTitleJoinKey}):{" "}
+                {formatProvenanceCount(join.disasterTitleMatched)} /{" "}
+                {formatProvenanceCount(join.disasterTitleTotal)}
+              </li>
+              <li>Missing gmProjectId: {formatProvenanceCount(join.missingGmProjectId)}</li>
+              <li>Missing federalShareObligated: {formatProvenanceCount(join.missingFederalShare)}</li>
+              <li>
+                Applicant IDs: {formatProvenanceCount(join.distinctApplicantId)} distinct{" "}
+                <code>applicantId</code> values. Distinct source names:{" "}
+                {formatProvenanceCount(join.distinctApplicantName)}. This is not a
+                legal-entity count.
+              </li>
+            </ul>
+          </div>
+        ) : null}
       </section>
 
       <section className="panel p-5">
@@ -131,6 +158,21 @@ export function MethodologyContent() {
           “NYC City agency.” Port Authority and MTA are regional / public
           authorities.
         </p>
+        <details className="mt-3 text-sm">
+          <summary className="cursor-pointer text-navy">Show tagging rules</summary>
+          <div className="mt-2 space-y-2 text-ink-soft">
+            <p>
+              Borough counties: {NYC_BOROUGH_COUNTIES.join("; ")}.
+            </p>
+            <p>
+              Applicant cities: {NYC_APPLICANT_CITIES.join("; ")}.
+            </p>
+            <p>
+              Name patterns include: {NYC_NAME_PHRASES.join("; ")}. A standalone
+              “NYC” token also matches.
+            </p>
+          </div>
+        </details>
       </section>
 
       <section className="panel p-5">
@@ -146,6 +188,9 @@ export function MethodologyContent() {
             <li key={flag.code} className="border-b border-rule pb-3">
               <div className="font-medium text-navy">{flag.label}</div>
               <p className="mt-1 text-ink-soft">{flag.method}</p>
+              {flag.code === "duplicate_looking" ? (
+                <p className="mt-1 text-xs text-ink-faint">{DUPLICATE_LOOKING_RULE}</p>
+              ) : null}
             </li>
           ))}
         </ul>

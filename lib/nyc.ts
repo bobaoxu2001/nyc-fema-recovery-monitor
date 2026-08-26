@@ -34,3 +34,23 @@ export function nycReasonText(reasons: string[]): string {
   if (!reasons.length) return "Not tagged as NYC-related under this prototype's rules.";
   return reasons.map((reason) => NYC_REASON_LABELS[reason] || reason).join(" ");
 }
+
+export function nycReasonDetails(project: {
+  nycReasons: string[];
+  county: string;
+  applicantCity: string | null;
+  applicantNameRaw?: string;
+  applicantName: string;
+}): string[] {
+  const lines: string[] = [];
+  if (project.nycReasons.includes("borough_county")) {
+    lines.push(`County = ${project.county || "borough county"}`);
+  }
+  if (project.nycReasons.includes("applicant_city")) {
+    lines.push(`Applicant city = ${project.applicantCity || "NYC city"}`);
+  }
+  if (project.nycReasons.includes("applicant_name")) {
+    lines.push("Applicant name matched a documented NYC-related pattern");
+  }
+  return lines;
+}

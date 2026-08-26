@@ -97,6 +97,20 @@ export type SnapshotMeta = {
   applicantCount: number;
   disasterCount: number;
   federalShareSum: number;
+  applicantCountDefinition?: string;
+  joinQuality?: {
+    applicantJoinKey: string;
+    applicantJoinMatched: number;
+    applicantJoinTotal: number;
+    disasterTitleJoinKey: string;
+    disasterTitleMatched: number;
+    disasterTitleTotal: number;
+    missingGmProjectId: number;
+    missingFederalShare: number;
+    distinctApplicantId: number;
+    distinctApplicantName: number;
+    applicantCountDefinition: string;
+  };
   sourceCheck?: {
     apiKeyRequired?: boolean;
     endpoint?: string;
@@ -130,6 +144,7 @@ export type PortfolioSummarySlice = {
   averageProject: number | null;
   largestProject: number | null;
   categoryCount: number;
+  flaggedCount: number;
   byDisaster: NamedTotal[];
   byApplicant: NamedTotal[];
   byCategory: NamedTotal[];
@@ -151,6 +166,7 @@ export type Project = {
   title: string;
   applicantId: string;
   applicantName: string;
+  applicantNameRaw: string;
   applicantCity: string | null;
   categoryCode: string;
   category: string;
@@ -204,6 +220,7 @@ export type NamedTotal = {
   projects: number;
   federalShare: number;
   share: number;
+  flaggedCount?: number;
 };
 
 export type Kpis = {

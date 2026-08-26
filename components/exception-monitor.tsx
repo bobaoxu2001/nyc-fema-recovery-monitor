@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { displayApplicantName } from "@/lib/display-name";
 import { flaggedProjects } from "@/lib/flags";
 import { formatCompactUsd, formatPercent } from "@/lib/format";
 import { FlagStack } from "./flag-badge";
@@ -53,7 +54,9 @@ export function ExceptionMonitor() {
             <div className="flex justify-between gap-3 border-b border-rule/70 py-1">
               <dt>Top applicant share</dt>
               <dd className="tabular">
-                {topApplicant ? `${formatPercent(topApplicant.share)} · ${topApplicant.name}` : "Unavailable"}
+                {topApplicant
+                  ? `${formatPercent(topApplicant.share)} · ${displayApplicantName(topApplicant.name)}`
+                  : "Unavailable"}
               </dd>
             </div>
             <div className="flex justify-between gap-3 border-b border-rule/70 py-1">
@@ -68,7 +71,7 @@ export function ExceptionMonitor() {
           <h2 className="font-serif text-lg text-navy">Largest holders in this view</h2>
           <p className="text-xs text-ink-soft">
             {topApplicant
-              ? `${topApplicant.name} accounts for ${formatCompactUsd(topApplicant.federalShare)}.`
+              ? `${displayApplicantName(topApplicant.name)} accounts for ${formatCompactUsd(topApplicant.federalShare)}.`
               : "No applicant totals in this selection."}
           </p>
           <p className="mt-2 text-xs text-ink-soft">

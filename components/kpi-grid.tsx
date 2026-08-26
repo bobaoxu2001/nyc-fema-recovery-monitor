@@ -25,9 +25,9 @@ const ITEMS: Array<{
   },
   {
     key: "applicantCount",
-    label: "Applicants",
-    hint: "Distinct applicant IDs in the selected portfolio.",
-    footnote: "Selected universe",
+    label: "Applicant IDs",
+    hint: "Distinct OpenFEMA applicantId values. This is not a legal-entity count. The same organization can appear under more than one ID or name spelling.",
+    footnote: "Distinct applicantId",
   },
   {
     key: "disasterCount",
@@ -37,8 +37,8 @@ const ITEMS: Array<{
   },
   {
     key: "flaggedCount",
-    label: "Projects flagged for review",
-    hint: "Records with at least one analytical screening flag. Not a compliance finding.",
+    label: "Worksheets flagged for review",
+    hint: "Worksheets with at least one screening flag versus the disaster cohort, or a data-quality flag. Not a compliance finding.",
     footnote: "Screening only",
   },
 ];

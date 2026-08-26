@@ -13,6 +13,7 @@ function project(overrides: Partial<Project>): Project {
     title: "Debris removal",
     applicantId: "nyc-1",
     applicantName: "City of New York",
+    applicantNameRaw: "City of New York",
     applicantCity: "New York",
     categoryCode: "A",
     category: "Debris Removal",

@@ -32,11 +32,6 @@ export function SiteHeader() {
             <p className="mt-2 text-sm text-ink">
               New York State portfolio · NYC-related analytical view
             </p>
-            <p className="mt-1 max-w-2xl text-sm text-ink-soft">
-              Built as an independent analytical prototype for an NYC
-              disaster-recovery grant-management use case. The data universe is
-              New York State Public Assistance.
-            </p>
           </div>
           <div className="rounded border border-rule bg-paper px-3 py-2 text-right text-xs text-ink-soft">
             <div>New York State Public Assistance · OpenFEMA</div>

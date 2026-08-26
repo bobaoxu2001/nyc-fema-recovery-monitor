@@ -15,18 +15,13 @@ export function ScopeBar() {
 
   return (
     <section className="panel p-4" aria-label="Portfolio universe">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="kicker">Data universe</p>
-          <h2 className="mt-1 font-serif text-lg text-navy">{universeLabel}</h2>
-          <p className="mt-1 text-xs text-ink-soft">
-            All New York is the OpenFEMA file. NYC-related is an analyst-constructed
-            subset. It is not an official City or FEMA geography, and not every
-            tagged applicant is a City agency.
-          </p>
-        </div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-ink">
+          <span className="font-medium text-navy">{universeLabel}</span>
+          <span className="text-ink-soft"> · NYC-related is an analyst subset, not an official geography</span>
+        </p>
         <button type="button" className="btn-secondary" onClick={resetFilters}>
-          Reset filters
+          Reset
         </button>
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -67,7 +62,7 @@ export function ScopeBar() {
                   type="button"
                   aria-pressed={active}
                   title={shortcut.name}
-                  className={`rounded border px-3 py-1.5 text-sm ${
+                  className={`rounded border px-3 py-1 text-left text-sm leading-tight ${
                     active
                       ? "border-navy bg-navy text-paper-3"
                       : "border-rule bg-paper-3 text-navy hover:bg-navy-pale"
@@ -77,7 +72,10 @@ export function ScopeBar() {
                     setFilters({ disaster: active ? "all" : shortcut.key })
                   }
                 >
-                  {shortcut.label}
+                  <span className="block">{shortcut.label}</span>
+                  <span className={`block text-[11px] ${active ? "text-paper-3/80" : "text-ink-faint"}`}>
+                    {shortcut.declaration}
+                  </span>
                 </button>
               );
             })}

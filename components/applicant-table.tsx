@@ -1,5 +1,6 @@
 "use client";
 
+import { displayApplicantName } from "@/lib/display-name";
 import { formatCompactUsd, formatCount, formatPercent } from "@/lib/format";
 import type { NamedTotal } from "@/lib/types";
 import { EmptyState } from "./status-panels";
@@ -38,7 +39,7 @@ export function ApplicantTable({ rows, interactive = true }: { rows: NamedTotal[
                 className={interactive ? "cursor-pointer hover:bg-navy-pale/60" : undefined}
                 onClick={interactive ? () => setFilters({ applicant: row.key }) : undefined}
               >
-                <td className="max-w-[280px]">{row.name}</td>
+                <td className="max-w-[280px]">{displayApplicantName(row.name)}</td>
                 <td className="text-right tabular">{formatCount(row.projects)}</td>
                 <td className="text-right tabular">{formatCompactUsd(row.federalShare)}</td>
                 <td className="text-right tabular">{formatPercent(row.share)}</td>
