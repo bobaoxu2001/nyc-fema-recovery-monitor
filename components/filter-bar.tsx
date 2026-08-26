@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { uniqueSorted } from "@/lib/filters";
-import type { AmountFilter, FlagFilter, GeographyFilter } from "@/lib/types";
+import type { AmountFilter, FlagFilter } from "@/lib/types";
 import { usePortfolio } from "./providers";
 
 function Select({
@@ -34,7 +34,7 @@ function Select({
 }
 
 export function FilterBar() {
-  const { allProjects, filters, setFilters, resetFilters, meta, summary } = usePortfolio();
+  const { allProjects, filters, setFilters, summary } = usePortfolio();
 
   const disasters = useMemo(() => {
     if (allProjects.length) {
@@ -89,27 +89,13 @@ export function FilterBar() {
 
   return (
     <section className="panel p-4" aria-label="Portfolio filters">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h2 className="font-serif text-lg text-navy">Portfolio filters</h2>
-          <p className="text-xs text-ink-soft">
-            {meta?.geography}. NYC-related is an analyst-constructed subset, not an official geography.
-          </p>
-        </div>
-        <button type="button" className="btn-secondary" onClick={resetFilters}>
-          Reset filters
-        </button>
+      <div className="mb-3">
+        <h2 className="font-serif text-lg text-navy">More filters</h2>
+        <p className="text-xs text-ink-soft">
+          Charts, tables, and flags use this same selected set. No mixed denominators.
+        </p>
       </div>
       <div className="flex flex-wrap gap-3">
-        <Select
-          id="geography"
-          label="Geography"
-          value={filters.geography}
-          onChange={(value) => setFilters({ geography: value as GeographyFilter })}
-        >
-          <option value="all-ny">All New York</option>
-          <option value="nyc">NYC-related subset</option>
-        </Select>
         <Select
           id="disaster"
           label="Disaster"

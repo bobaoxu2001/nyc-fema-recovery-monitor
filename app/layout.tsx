@@ -3,6 +3,7 @@ import { Fraunces, IBM_Plex_Sans } from "next/font/google";
 import { DataProvider, FilterProvider } from "@/components/providers";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { CANONICAL_SUMMARY } from "@/lib/canonical";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -28,7 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={`${fraunces.variable} ${ibmPlexSans.variable} font-sans`}>
-        <DataProvider>
+        <DataProvider initialSummary={CANONICAL_SUMMARY}>
           <FilterProvider>
             <div className="flex min-h-screen flex-col">
               <SiteHeader />

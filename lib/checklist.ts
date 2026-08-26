@@ -47,4 +47,4 @@ export const ANALYST_CHECKLIST = [
 ] as const;
 
 export const CHECKLIST_DISCLAIMER =
-  "Procurement records, invoices, proofs of payment, insurance documents, and internal reimbursement records are generally not included in the OpenFEMA public dataset. This checklist illustrates how public grant data could connect to a broader internal grant-management workflow.";
+  "These internal records are not available in the OpenFEMA public dataset. This workflow illustrates how public grant information could connect to an internal grant-management process.";

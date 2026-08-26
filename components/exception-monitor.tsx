@@ -16,12 +16,12 @@ export function ExceptionMonitor() {
   return (
     <div className="space-y-4">
       <section className="panel p-4">
-        <h2 className="font-serif text-lg text-navy">How screening works</h2>
+        <h2 className="font-serif text-lg text-navy">Why a record is flagged</h2>
         <p className="mt-1 text-sm text-ink-soft">
-          Flags are calculated on the currently filtered portfolio. High-dollar
-          and outlier thresholds therefore move when filters change. They are
-          prioritization aids, not determinations of eligibility, fraud, or
-          improper payment.
+          These flags help an analyst decide what to open first. They are not
+          findings of non-compliance, fraud, or ineligibility. Thresholds are
+          calculated on the currently selected universe, so a large Sandy
+          worksheet may be typical there and unusual in a smaller disaster.
         </p>
         <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
           <div className="rounded border border-rule bg-paper px-3 py-2">
@@ -39,7 +39,7 @@ export function ExceptionMonitor() {
           <div className="rounded border border-rule bg-paper px-3 py-2">
             <dt className="text-xs uppercase tracking-[0.12em] text-ink-faint">Flagged for review</dt>
             <dd className="mt-1 font-serif text-xl text-navy tabular">
-              {kpis.flaggedCount.toLocaleString()}
+              {kpis.flaggedCount == null ? "Unavailable" : kpis.flaggedCount.toLocaleString()}
             </dd>
           </div>
         </dl>
@@ -114,8 +114,8 @@ export function ExceptionMonitor() {
                   <th>Applicant</th>
                   <th className="text-right">Federal amount</th>
                   <th>Flag</th>
-                  <th>Reason</th>
-                  <th>Recommended analyst review</th>
+                  <th>Why review?</th>
+                  <th>What to review next</th>
                 </tr>
               </thead>
               <tbody>

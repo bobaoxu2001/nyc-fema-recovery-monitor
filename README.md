@@ -55,7 +55,7 @@ The app does **not** use Public Assistance Grant Award Activities for headline t
 
 **Primary metric:** federal share obligated.
 
-**NYC-related** is an analyst-constructed subset, not an official geography. A record is tagged if:
+The data universe is **New York State Public Assistance**. The headline federal-share figure is statewide. **NYC-related** is an analyst-constructed subset, not an official geography, and not every tagged applicant is a City agency. A record is tagged if:
 
 1. County is Bronx, Kings, New York, Queens, or Richmond, or
 2. Applicant city is New York, Manhattan, Bronx, Brooklyn, Queens, or Staten Island, or

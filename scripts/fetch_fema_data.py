@@ -229,6 +229,7 @@ def main() -> int:
     print("Writing files...")
     write_json(str(public_path), public_snapshot)
     write_json(str(summary_path), summary)
+    write_json(str(PROCESSED_DIR / "summary.json"), summary)
     write_json(str(validation_path), {"retrievedAt": retrieved_at, "sourceCheck": source_check, **validation})
     write_json(str(meta_path), meta)
 

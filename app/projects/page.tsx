@@ -4,12 +4,16 @@ import { DisclaimerBanner } from "@/components/disclaimer-banner";
 import { FilterBar } from "@/components/filter-bar";
 import { ProjectTable } from "@/components/project-table";
 import { usePortfolio } from "@/components/providers";
+import { ScopeBar } from "@/components/scope-bar";
 import { ErrorState, LoadingState } from "@/components/status-panels";
 
 export default function ProjectsPage() {
-  const { loading, hydrating, error, filtered, signals, kpis } = usePortfolio();
+  const { hydrating, error, filtered, signals, kpis, meta } = usePortfolio();
 
-  if (loading || hydrating) {
+  if (error && !meta.recordCount) {
+    return <ErrorState message={error} />;
+  }
+  if (hydrating) {
     return <LoadingState label="Loading project worksheets" />;
   }
   if (error) {
@@ -19,6 +23,7 @@ export default function ProjectsPage() {
   return (
     <div className="space-y-4">
       <DisclaimerBanner compact />
+      <ScopeBar />
       <FilterBar />
       <p className="text-sm text-ink-soft">
         {kpis.projectCount.toLocaleString()} worksheets in the selected portfolio.

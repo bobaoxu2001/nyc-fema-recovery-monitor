@@ -81,4 +81,16 @@ describe("applyBaseFilters", () => {
     const result = applyBaseFilters(withNull, { ...DEFAULT_FILTERS, amount: "10mplus" });
     expect(result).toHaveLength(0);
   });
+
+  it("keeps All New York and NYC-related on the same selected denominator", () => {
+    const nyc = applyBaseFilters(rows, { ...DEFAULT_FILTERS, geography: "nyc" });
+    const all = applyBaseFilters(rows, { ...DEFAULT_FILTERS, geography: "all-ny" });
+    expect(nyc.every((row) => row.nycRelated)).toBe(true);
+    expect(all).toHaveLength(2);
+    expect(nyc).toHaveLength(1);
+    const nycShare = nyc.reduce((sum, row) => sum + (row.federalShare ?? 0), 0);
+    const allShare = all.reduce((sum, row) => sum + (row.federalShare ?? 0), 0);
+    expect(nycShare).toBe(5_000_000);
+    expect(allShare).toBe(5_050_000);
+  });
 });

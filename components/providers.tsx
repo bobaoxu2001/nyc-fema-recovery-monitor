@@ -9,6 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { CANONICAL_SUMMARY } from "@/lib/canonical";
 import { expandProjects } from "@/lib/expand";
 import { applyBaseFilters } from "@/lib/filters";
 import {
@@ -33,21 +34,9 @@ import {
 type DataState = {
   loading: boolean;
   error: string | null;
-  meta: SnapshotMeta | null;
-  summary: PortfolioSummary | null;
+  meta: SnapshotMeta;
+  summary: PortfolioSummary;
   projects: Project[];
-};
-
-const EMPTY_KPIS: Kpis = {
-  projectCount: 0,
-  federalShare: 0,
-  applicantCount: 0,
-  disasterCount: 0,
-  medianProject: null,
-  averageProject: null,
-  largestProject: null,
-  categoryCount: 0,
-  flaggedCount: 0,
 };
 
 const DataContext = createContext<DataState | null>(null);
@@ -69,12 +58,18 @@ function isDefaultPortfolio(filters: Filters): boolean {
   );
 }
 
-export function DataProvider({ children }: { children: ReactNode }) {
+export function DataProvider({
+  children,
+  initialSummary = CANONICAL_SUMMARY,
+}: {
+  children: ReactNode;
+  initialSummary?: PortfolioSummary;
+}) {
   const [state, setState] = useState<DataState>({
     loading: true,
     error: null,
-    meta: null,
-    summary: null,
+    meta: initialSummary.meta,
+    summary: initialSummary,
     projects: [],
   });
 
@@ -82,31 +77,19 @@ export function DataProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     async function load() {
       try {
-        const summaryResponse = await fetch("/data/summary.json");
-        if (summaryResponse.ok) {
-          const summary = (await summaryResponse.json()) as PortfolioSummary;
-          if (!cancelled) {
-            setState((current) => ({
-              ...current,
-              meta: summary.meta,
-              summary,
-            }));
-          }
-        }
-
         const response = await fetch("/data/projects.json");
         if (!response.ok) {
           throw new Error(`Snapshot HTTP ${response.status}`);
         }
         const snapshot = (await response.json()) as Snapshot;
         if (cancelled) return;
-        setState({
+        setState((current) => ({
           loading: false,
           error: null,
-          meta: snapshot.meta,
-          summary: null,
+          meta: snapshot.meta ?? current.meta,
+          summary: current.summary,
           projects: expandProjects(snapshot),
-        });
+        }));
       } catch (error) {
         if (cancelled) return;
         setState((current) => ({
@@ -183,19 +166,28 @@ export function usePortfolio() {
   const liveByApplicant = useMemo(() => totalsByApplicant(filtered, 15), [filtered]);
   const liveByCategory = useMemo(() => totalsByCategory(filtered), [filtered]);
 
-  const usingSummary = loading && Boolean(summary) && isDefaultPortfolio(filters);
-  const summarySlice =
-    filters.geography === "nyc" ? summary?.nyc : summary?.allNy;
+  const usingSummary = projects.length === 0 && isDefaultPortfolio(filters);
+  const summarySlice = filters.geography === "nyc" ? summary.nyc : summary.allNy;
 
-  const kpis: Kpis = usingSummary && summarySlice
-    ? { ...EMPTY_KPIS, ...summarySlice, flaggedCount: 0 }
+  const kpis: Kpis = usingSummary
+    ? {
+        projectCount: summarySlice.projectCount,
+        federalShare: summarySlice.federalShare,
+        applicantCount: summarySlice.applicantCount,
+        disasterCount: summarySlice.disasterCount,
+        medianProject: summarySlice.medianProject,
+        averageProject: summarySlice.averageProject,
+        largestProject: summarySlice.largestProject,
+        categoryCount: summarySlice.categoryCount,
+        flaggedCount: null,
+      }
     : liveKpis;
-  const byDisaster: NamedTotal[] = usingSummary && summarySlice ? summarySlice.byDisaster : liveByDisaster;
-  const byApplicant: NamedTotal[] = usingSummary && summarySlice ? summarySlice.byApplicant : liveByApplicant;
-  const byCategory: NamedTotal[] = usingSummary && summarySlice ? summarySlice.byCategory : liveByCategory;
+  const byDisaster: NamedTotal[] = usingSummary ? summarySlice.byDisaster : liveByDisaster;
+  const byApplicant: NamedTotal[] = usingSummary ? summarySlice.byApplicant : liveByApplicant;
+  const byCategory: NamedTotal[] = usingSummary ? summarySlice.byCategory : liveByCategory;
 
   return {
-    loading: loading && !usingSummary,
+    loading: false,
     hydrating: loading,
     error,
     meta,
@@ -211,5 +203,6 @@ export function usePortfolio() {
     byApplicant,
     byCategory,
     summary,
+    ready: !loading,
   };
 }

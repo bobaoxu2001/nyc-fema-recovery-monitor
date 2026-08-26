@@ -2,96 +2,122 @@
 
 Live URL: https://nyc-fema-recovery-monitor.vercel.app
 
-Use this if you have about 90 seconds on a shared screen. Speak in your own words. The text below is a guide, not a script to memorize.
+This is a small analytical prototype using public OpenFEMA data. It is not a FEMA grant-management system.
 
-## 30-second explanation
+Speak in your own words. Short sentences.
 
-I wanted to understand FEMA Public Assistance before this interview.
+## 15-second version
 
-I pulled the public OpenFEMA project-worksheet file for New York and turned it into a small grant-monitoring prototype.
+I wanted to understand FEMA Public Assistance from an analyst’s point of view. I used the public OpenFEMA worksheet file for New York and built a small monitoring prototype. It shows the portfolio, then flags records that may deserve a closer look. Those flags are not compliance findings.
 
-The first screen shows how much federal funding is on the books, which disasters drive it, and which applicants hold the largest portfolios.
+## 30-second version
 
-I also added simple screening flags for unusually large projects and missing information. Those flags are not compliance findings. They just help an analyst decide what to look at first.
+I built this because I wanted to see how grant monitoring might look in this role.
 
-## 60-second explanation
+The data are obligated Public Assistance worksheets for New York State. The headline dollars are statewide federal share, not NYC-only funding. There is an NYC-related subset, but that is an analyst tag, not an official geography.
 
-I built this because the job is about watching a grant portfolio, not about predicting disasters.
+The first screen shows size, concentration, and what to review next. I was careful not to call a large or incomplete record non-compliant. Public data cannot support that.
 
-The data are obligated Public Assistance worksheets from OpenFEMA. Each row is one project. I checked that the FEMA Grants Manager project id is unique for New York, so I can add federal share without double-counting.
+## 60-second version
 
-The overview answers the first questions an analyst would ask: how much federal money, which disasters, which applicants, which work categories.
+I wanted to understand how the work in this role might look from an analyst’s perspective, so I used OpenFEMA public data to build a small monitoring prototype.
 
-The exception monitor then ranks records that sit in the top 5% of the current filter, or that have missing fields, or a negative obligation that may be a deobligation.
+The file is New York State, because city agencies are often coded Statewide. I did not pretend OpenFEMA has a clean NYC flag.
 
-I was careful about language. Public data cannot tell you whether procurement was proper or whether a reimbursement is eligible. So the tool says “flagged for analyst review,” not “non-compliant.”
+The dashboard answers four questions: what the data are, how large the book is, where funding sits, and what might deserve review.
 
-That is the same distinction I used in reimbursement monitoring and in audit work: first find the exceptions, then pull the documents.
+I checked that the Grants Manager project id is unique in New York, so federal share is summed once per worksheet. I did not use the award-activity file, because that one can have multiple obligation events.
+
+The exception monitor uses simple screens: high-dollar in the current filter, missing fields, and negative amounts that may be deobligations. That is the same sequence I used in reimbursement monitoring and audit work. Find exceptions first. Then pull documents.
 
 ## 90-second screen-share walkthrough
 
-1. **Overview.** Point to the independent-prototype label and the data-refresh date. Say this is New York State OpenFEMA data, not an official OMB system.
+1. Overview. Point to “Independent analytical prototype” and “New York State Public Assistance.” Say the dollars are statewide federal share.
 
-2. **KPIs.** Total projects, total federal obligations, applicants, disasters, median amount, and projects flagged for review. Mention that the median is much smaller than the average because a few worksheets are enormous.
+2. KPIs. Worksheets, federal share, applicants, disasters, flagged for review.
 
-3. **Filters.** Switch Disaster to Hurricane Sandy (DR-4085), then to COVID-19 (DR-4480), then to Remnants of Hurricane Ida (DR-4615). Note that COVID and Sandy dominate New York’s federal share.
+3. Toggle NYC-related. Say this is an analyst subset. Not every tagged applicant is a City agency.
 
-4. **Optional NYC toggle.** Geography → NYC-related subset. Explain that city agencies are often coded Statewide, so you used county, city, and applicant-name rules instead of pretending OpenFEMA has a clean NYC flag.
+4. Click Hurricane Sandy. Then COVID-19 if there is time. Note that COVID currently holds more federal share than Sandy in this file.
 
-5. **Exception Monitor.** Show the p95 / p99 thresholds and one high-dollar row. Read the banner: flags are screening indicators, not findings.
+5. Exception Monitor. Read one flag. Say it is a screening indicator, not a finding.
 
-6. **Project detail.** Open a flagged worksheet. Show federal share versus project amount, then the illustrative checklist. Read the note that invoices, procurement files, and insurance records are not in OpenFEMA.
+6. Open one project. Show the illustrative workflow. Read the disclaimer: contracts, invoices, insurance, and reimbursement status are not in OpenFEMA.
 
-7. **Methodology.** If there is time, show the grain / identifier decision and the “not affiliated with FEMA or OMB” disclaimer.
+7. Methodology if asked. Grain, identifier, and what you would add with internal OMB data.
 
-Stop there. Offer to walk through a specific applicant if they want.
+## Possible interviewer questions
 
-## Possible interviewer questions and answers
+Keep answers around 20–40 seconds.
 
-### Why did you build this?
+### 1. Why did you build this?
 
-I wanted a concrete way to learn the Public Assistance file before talking about grant monitoring. Building a small monitor forced me to decide what a project is, what I can add, and what I cannot claim.
+I wanted to understand the work before the interview. Building a small monitor forced me to decide what a project is, what I can add, and what I cannot claim.
 
-### What did you learn about FEMA Public Assistance?
+### 2. What did you learn from the project?
 
-Public Assistance is project-based. The public file is obligated worksheets, not the full grant file. Work is grouped into categories such as debris, emergency protective measures, roads, buildings, and utilities. A few disasters, especially Sandy and COVID in New York, account for most of the federal share. A lot of City work sits in Statewide rather than in a borough county field.
+Public Assistance is project-based. The public file is obligated worksheets, not the full grant file. It is useful for portfolio monitoring. It is not enough for a compliance finding.
 
-### What does the exception monitor do?
+### 3. What is FEMA Public Assistance?
 
-It ranks worksheets that look unusual in the current filter: very large federal share, missing fields, negative obligations, or records that look similar. It also shows when one applicant or one category dominates the selected dollars. That is a concentration indicator, not a problem by itself.
+It is FEMA’s grant program for debris, emergency work, and restoration of public facilities after a declared disaster. Applicants are usually governments or certain nonprofits. The public file shows obligated project worksheets.
 
-### Why aren’t these flags compliance findings?
+### 4. What does the dashboard actually measure?
 
-Because the public file does not contain the evidence you would need for a finding. There are no contracts, invoices, proofs of payment, or insurance reviews. A large project can be completely proper. A missing field can be a data-quality issue. I can put a record in a review queue. I cannot declare it ineligible from OpenFEMA alone.
+Federal share obligated on those worksheets. Plus counts of projects, applicants, and disasters. Flags are screens on that selected set.
 
-### What are the limitations of OpenFEMA?
+### 5. Why New York State data instead of only NYC?
 
-It is not the official financial system. FEMA says the numbers can differ from USASpending or internal ledgers. Unobligated work is missing. Applicant names can have typos. There is no reliable official NYC flag. Supporting documents are not there. I treated it as a monitoring snapshot, not as a system of record.
+OpenFEMA does not have a reliable official NYC flag. Many City agencies sit in Statewide. If I had filtered only to five boroughs, I would have undercounted. So the universe is New York State, with an NYC-related subset I can explain.
 
-### How does this relate to your previous work?
+### 6. How did you identify NYC-related records?
 
-At Pronghorn I watched budget execution and reimbursement and looked for policy exceptions. At BDO I reconciled records and investigated exceptions for workpapers. At E Fund I built a validation pipeline over a large dataset. This prototype is the same sequence: get a clean grain, add what is safe to add, flag exceptions, and write down the limits.
+Three conservative rules: five-borough county, applicant city, or a documented name pattern. NYCHA is a City entity. Port Authority and MTA are regional authorities. A hospital in Manhattan may only be a geographic match. I do not call all of them City agencies.
 
-### What would you add if you had access to internal OMB data?
+### 7. What does “flagged for review” mean?
 
-I would keep the OpenFEMA worksheet as the index row and attach City cost data, contracts, procurement packages, invoices, proofs of payment, insurance information, and reimbursement status. Then an analyst could go from “this worksheet is large” to “here is the invoice packet and the remaining reimbursement.” That workflow is sketched on the Methodology page. It is not implemented, because those files are not public.
+It means the record is unusual or incomplete in the current filter. It goes into a review queue. It does not mean the project is wrong.
 
-### How would contracts, invoices, procurement, and reimbursement records fit into this system?
+### 8. Does a flag mean the project is non-compliant?
 
-They would hang off the project identifier. The dashboard would still start with obligations and flags. The detail page would replace the illustrative checklist with actual document status: received, missing, in review. Exception review would then feed reconciliation and management reporting.
+No. The public file does not have contracts, invoices, or insurance reviews. I can prioritize. I cannot determine eligibility from OpenFEMA alone.
 
-### How would you improve the tool for real analysts?
+### 9. Why the 95th / 99th percentile?
 
-I would confirm the NYC entity list with the agencies OMB actually monitors. I would add version history so deobligations are visible as a trail, not just a negative amount. I would let analysts assign a review owner and a status. I would not add a model that pretends to score fraud from public fields.
+They are simple, explainable screens. They move with the selected portfolio. A $2 million worksheet can be typical in Sandy and unusual in a small flood. I do not apply them if the selection has fewer than 20 positive-amount projects.
 
-### Why is COVID in a Sandy-focused conversation?
+### 10. How did you make sure you were not double-counting?
 
-Because it is in the New York Public Assistance file and it is currently the largest disaster by federal share. A portfolio monitor should show the whole book, then let you filter to Sandy, Ida, or a single applicant. I would not hide COVID just to make the demo look more Sandy-like.
+I used the project-details file, not the award-activity file. I checked that gmProjectId is unique for every New York row. Then I summed federal share once per worksheet.
 
-### How do you avoid double-counting?
+### 11. What are the limitations of OpenFEMA data?
 
-I used the project-details file, not the award-activity file. I checked that `gmProjectId` is unique for every New York row. Then I summed federal share once per worksheet. If that uniqueness ever broke, the refresh script would fail validation.
+It is not the official financial system. Unobligated work is missing. Applicant names can have typos. There is no official NYC geography. Supporting documents are not there.
 
-### What is the NYC-related filter really doing?
+### 12. What data would you want at OMB?
 
-It is a conservative tag so a City-focused analyst can narrow the statewide file. It will miss oddly named entities and it may include bi-state ones such as the Port Authority. I show the count and the rules instead of calling it the official NYC portfolio.
+City cost data, contracts, procurement packages, invoices, proofs of payment, insurance, and reimbursement status. Keep the public worksheet as the index row.
+
+### 13. How would procurement records fit?
+
+They would attach to the project identifier. The dashboard would still start with obligations. The detail page would show whether the procurement file was received.
+
+### 14. How would invoices and proof of payment fit?
+
+Same way. They support the costs on the worksheet. Public data cannot show whether the applicant paid an eligible invoice.
+
+### 15. How would insurance information fit?
+
+As a duplication-of-benefits check against the same project. OpenFEMA does not include proceeds or coverage.
+
+### 16. How does this connect to your previous experience?
+
+At Pronghorn I watched reimbursements and policy exceptions. At BDO I reconciled records and investigated exceptions. At E Fund I validated a large dataset and monitored outliers. At Columbia I worked on risk and controls. This prototype is that sequence applied to public grant data.
+
+### 17. What would you improve next?
+
+Confirm the NYC entity list with the agencies OMB actually monitors. Show deobligation history if internal data had versions. Add a review owner and status. I would not add a fraud score from public fields.
+
+### 18. What was the most interesting thing you learned?
+
+How much of the New York Public Assistance book is a small number of disasters and applicants. And that COVID currently outweighs Sandy in this public file. A monitor has to show the whole book, then let you filter.

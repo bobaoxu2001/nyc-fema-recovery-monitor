@@ -215,7 +215,7 @@ export type Kpis = {
   averageProject: number | null;
   largestProject: number | null;
   categoryCount: number;
-  flaggedCount: number;
+  flaggedCount: number | null;
 };
 
 export type ConcentrationRow = {

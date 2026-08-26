@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { formatRefreshedAt } from "@/lib/format";
+import { canonicalMeta } from "@/lib/canonical";
+import { formatProvenanceCount, formatProvenanceUsd, formatRefreshShort } from "@/lib/format";
 import { useData } from "./providers";
 
 const NAV = [
@@ -15,6 +16,7 @@ const NAV = [
 export function SiteHeader() {
   const pathname = usePathname();
   const { meta } = useData();
+  const proven = canonicalMeta(meta);
 
   return (
     <header className="border-b border-rule bg-paper-3">
@@ -27,19 +29,24 @@ export function SiteHeader() {
                 NYC FEMA Public Assistance Recovery Monitor
               </h1>
             </Link>
-            <p className="mt-2 max-w-2xl text-sm text-ink-soft">
-              A lightweight analytical prototype for grant portfolio monitoring
-              and exception review.
+            <p className="mt-2 text-sm text-ink">
+              New York State Public Assistance · OpenFEMA
+            </p>
+            <p className="mt-1 max-w-2xl text-sm text-ink-soft">
+              A small analytical prototype for grant portfolio monitoring and
+              exception review. NYC-related is an optional analyst subset, not an
+              official FEMA geography.
             </p>
           </div>
           <div className="rounded border border-rule bg-paper px-3 py-2 text-right text-xs text-ink-soft">
-            <div>OpenFEMA API snapshot · no key</div>
-            <div className="mt-1 text-ink">
-              Data last refreshed: {formatRefreshedAt(meta?.retrievedAt)}
+            <div>New York State FEMA Public Assistance portfolio</div>
+            <div className="mt-1 text-sm text-ink">
+              Data refreshed: {formatRefreshShort(proven.retrievedAt)}
             </div>
-            {meta?.sourceCheck?.filter ? (
-              <div className="mt-1">Filter: {meta.sourceCheck.filter}</div>
-            ) : null}
+            <div className="mt-1 tabular">
+              {formatProvenanceCount(proven.recordCount)} worksheets ·{" "}
+              {formatProvenanceUsd(proven.federalShareSum)} federal share
+            </div>
           </div>
         </div>
         <nav

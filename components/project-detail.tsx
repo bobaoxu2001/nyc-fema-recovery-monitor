@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ANALYST_CHECKLIST, CHECKLIST_DISCLAIMER } from "@/lib/checklist";
 import { projectDisplayId } from "@/lib/expand";
 import { formatDate, formatUsdPrecise } from "@/lib/format";
-import { nycReasonText } from "@/lib/nyc";
+import { nycKind, nycKindLabel, nycReasonText } from "@/lib/nyc";
 import type { Project, ProjectFlag } from "@/lib/types";
 import { FlagStack } from "./flag-badge";
 
@@ -83,7 +83,14 @@ export function ProjectDetail({
           <Fact label="Declaration date" value={formatDate(project.declarationDate)} />
           <Fact label="First obligation date" value={formatDate(project.firstObligationDate)} />
           <Fact label="Last obligation date" value={formatDate(project.lastObligationDate)} />
-          <Fact label="NYC-related tag" value={project.nycRelated ? "Yes" : "No"} />
+          <Fact
+            label="NYC-related tag"
+            value={
+              project.nycRelated
+                ? nycKindLabel(nycKind(project.applicantName, project.nycReasons))
+                : "No"
+            }
+          />
         </dl>
         <p className="mt-3 text-xs text-ink-soft">{nycReasonText(project.nycReasons)}</p>
       </section>
@@ -98,8 +105,8 @@ export function ProjectDetail({
             {flags.map((flag) => (
               <li key={flag.code} className="rounded border border-terracotta/30 bg-terracotta-pale px-3 py-2">
                 <div className="font-medium text-terracotta">{flag.label}</div>
-                <p className="mt-1 text-ink">{flag.reason}</p>
-                <p className="mt-1 text-ink-soft">Suggested analyst review: {flag.suggestedReview}</p>
+                <p className="mt-1 text-ink">Why review? {flag.reason}</p>
+                <p className="mt-1 text-ink-soft">What to review next: {flag.suggestedReview}</p>
               </li>
             ))}
           </ul>
@@ -112,9 +119,12 @@ export function ProjectDetail({
       </section>
 
       <section className="panel p-4">
-        <p className="kicker">Illustrative OMB/FEMA analyst workflow</p>
-        <h3 className="mt-1 font-serif text-lg text-navy">Analyst review checklist</h3>
+        <p className="kicker">Illustrative OMB analyst review workflow</p>
+        <h3 className="mt-1 font-serif text-lg text-navy">Internal evidence this public file does not include</h3>
         <p className="mt-1 text-xs text-ink-soft">{CHECKLIST_DISCLAIMER}</p>
+        <p className="mt-2 text-xs text-ink-soft">
+          Exception review → reconciliation → reporting
+        </p>
         <ul className="mt-3 space-y-2">
           {ANALYST_CHECKLIST.map((item) => (
             <li key={item.id} className="flex gap-3 rounded border border-rule bg-paper px-3 py-2">

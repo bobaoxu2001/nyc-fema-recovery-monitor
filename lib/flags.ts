@@ -14,32 +14,29 @@ const FLAG_META: Record<FlagCode, Omit<ProjectFlag, "reason">> = {
   high_dollar: {
     code: "high_dollar",
     label: "High-dollar project",
-    suggestedReview:
-      "Confirm the project scope, cost estimate, and that the federal share is consistent with the documented work.",
+    suggestedReview: "Confirm project context and supporting cost documentation.",
   },
   extreme_outlier: {
     code: "extreme_outlier",
     label: "Extreme amount outlier",
     suggestedReview:
-      "Review why this project is far above typical amounts in the selected portfolio, including whether it is a bundled or statewide worksheet.",
+      "Confirm why this amount is far above typical worksheets in the selected portfolio, including whether the work is bundled.",
   },
   missing_fields: {
     code: "missing_fields",
     label: "Missing project information",
-    suggestedReview:
-      "Fill or verify the missing fields in the source system before using the record in a management report.",
+    suggestedReview: "Determine whether the information exists in internal grant records.",
   },
   negative_obligation: {
     code: "negative_obligation",
     label: "Negative federal obligation",
     suggestedReview:
-      "Check whether this is a deobligation, version adjustment, or data issue, and document the net funding position.",
+      "Review whether the amount reflects an amendment, adjustment, or deobligation.",
   },
   duplicate_looking: {
     code: "duplicate_looking",
     label: "Potential duplicate-looking record",
-    suggestedReview:
-      "Compare worksheets with the same applicant, disaster, title, and similar federal share. They may be valid versions, not duplicates.",
+    suggestedReview: "Compare project identifiers and underlying project documentation.",
   },
 };
 
@@ -56,31 +53,29 @@ export function flagDefinitions(): Array<{
       code: "high_dollar",
       label: FLAG_META.high_dollar.label,
       method:
-        "Federal share is at or above the 95th percentile of projects with a positive federal share in the currently filtered portfolio. Percentile flags are applied only when at least 20 positive-amount projects are in the selection.",
+        "Federal share is above the 95th percentile in the current portfolio. Applied only when at least 20 positive-amount projects are in the selection.",
     },
     {
       code: "extreme_outlier",
       label: FLAG_META.extreme_outlier.label,
-      method:
-        "Federal share is at or above the 99th percentile of projects with a positive federal share in the currently filtered portfolio.",
+      method: "Federal share is above the 99th percentile in the current portfolio.",
     },
     {
       code: "missing_fields",
       label: FLAG_META.missing_fields.label,
-      method:
-        "The record is missing one or more fields used in this monitor: applicant name, disaster, work category, project title, or federal share.",
+      method: "One or more fields used by this monitor are missing.",
     },
     {
       code: "negative_obligation",
       label: FLAG_META.negative_obligation.label,
       method:
-        "Federal share obligated is negative. OpenFEMA notes that negative amounts can reflect deobligations or adjustments. This is a monitoring flag, not a finding.",
+        "The public record contains a negative federal share, which may reflect an adjustment or deobligation.",
     },
     {
       code: "duplicate_looking",
       label: FLAG_META.duplicate_looking.label,
       method:
-        "Another New York record shares the same disaster, applicant, normalized project title, and federal share rounded to the nearest $100. These are not confirmed duplicates.",
+        "Another record has similar identifying attributes. Manual review may be useful. These are not confirmed duplicates.",
     },
   ];
 }
@@ -136,32 +131,32 @@ export function computeSignals(projects: Project[]): PortfolioSignals {
     if (typeof amount === "number" && amount < 0) {
       addFlag(project.id, {
         ...FLAG_META.negative_obligation,
-        reason: `Federal share obligated is ${amount.toLocaleString("en-US", { style: "currency", currency: "USD" })}. Negative amounts may be deobligations or adjustments.`,
+        reason: `The public record contains a negative federal share (${amount.toLocaleString("en-US", { style: "currency", currency: "USD" })}), which may reflect an adjustment or deobligation.`,
       });
     }
     if (project.missingFields.length > 0) {
       addFlag(project.id, {
         ...FLAG_META.missing_fields,
-        reason: `Missing ${project.missingFields.join(", ")}.`,
+        reason: `One or more fields used by this monitor are missing: ${project.missingFields.join(", ")}.`,
       });
     }
     if (project.duplicateGroup) {
       addFlag(project.id, {
         ...FLAG_META.duplicate_looking,
         reason:
-          "Another record has the same disaster, applicant, similar title, and federal share rounded to the nearest $100.",
+          "Another record has similar identifying attributes. Manual review may be useful.",
       });
     }
     if (typeof amount === "number" && amount > 0 && p95 != null && amount >= p95) {
       addFlag(project.id, {
         ...FLAG_META.high_dollar,
-        reason: `Federal share is at or above the 95th percentile of the selected portfolio (${p95.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 })}).`,
+        reason: `Federal share is above the 95th percentile in the current portfolio (${p95.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 })}).`,
       });
     }
     if (typeof amount === "number" && amount > 0 && p99 != null && amount >= p99) {
       addFlag(project.id, {
         ...FLAG_META.extreme_outlier,
-        reason: `Federal share is at or above the 99th percentile of the selected portfolio (${p99.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 })}).`,
+        reason: `Federal share is above the 99th percentile in the current portfolio (${p99.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 })}).`,
       });
     }
   }

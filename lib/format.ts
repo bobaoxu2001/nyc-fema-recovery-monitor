@@ -53,6 +53,17 @@ export function formatCount(value: number | null | undefined): string {
   return countFormatter.format(value);
 }
 
+/** Provenance facts: never render a missing value as 0. */
+export function formatProvenanceCount(value: number | null | undefined): string {
+  if (value == null || Number.isNaN(value)) return "Unavailable";
+  return countFormatter.format(value);
+}
+
+export function formatProvenanceUsd(value: number | null | undefined): string {
+  if (value == null || Number.isNaN(value)) return "Unavailable";
+  return formatCompactUsd(value);
+}
+
 export function formatPercent(value: number | null | undefined, digits = 1): string {
   if (value == null || Number.isNaN(value)) return "—";
   return `${(value * 100).toFixed(digits)}%`;
@@ -66,26 +77,54 @@ export function formatDate(value: string | null | undefined): string {
   return `${month}/${day}/${year}`;
 }
 
-export function formatRefreshedAt(iso: string | null | undefined): string {
-  if (!iso) return "Unknown";
+const LONG_MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
+const SHORT_MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+function partsFromIso(iso: string | null | undefined): { year: string; month: number; day: number } | null {
+  if (!iso) return null;
   const date = iso.slice(0, 10);
-  if (!date) return iso;
   const [year, month, day] = date.split("-");
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-  const monthName = months[Number(month) - 1];
-  if (!monthName) return date;
-  return `${monthName} ${Number(day)}, ${year}`;
+  const monthNum = Number(month);
+  const dayNum = Number(day);
+  if (!year || !monthNum || !dayNum) return null;
+  return { year, month: monthNum, day: dayNum };
+}
+
+export function formatRefreshedAt(iso: string | null | undefined): string {
+  const parts = partsFromIso(iso);
+  if (!parts) return "Unavailable";
+  return `${LONG_MONTHS[parts.month - 1]} ${parts.day}, ${parts.year}`;
+}
+
+export function formatRefreshShort(iso: string | null | undefined): string {
+  const parts = partsFromIso(iso);
+  if (!parts) return "Unavailable";
+  return `${SHORT_MONTHS[parts.month - 1]} ${parts.day}, ${parts.year}`;
 }
