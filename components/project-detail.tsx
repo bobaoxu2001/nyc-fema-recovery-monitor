@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ANALYST_CHECKLIST, CHECKLIST_DISCLAIMER } from "@/lib/checklist";
+import { CHECKLIST_DISCLAIMER, INTERNAL_EVIDENCE } from "@/lib/checklist";
 import { projectDisplayId } from "@/lib/expand";
 import { formatDate, formatUsdPrecise } from "@/lib/format";
 import { nycKind, nycKindLabel, nycReasonText } from "@/lib/nyc";
+import { OPENFEMA_DATASET_PAGE, openFemaProjectUrl } from "@/lib/openfema";
 import type { Project, ProjectFlag } from "@/lib/types";
 import { FlagStack } from "./flag-badge";
 
@@ -43,6 +44,7 @@ export function ProjectDetail({
   flags: ProjectFlag[];
 }) {
   const displayId = projectDisplayId(project);
+  const sourceUrl = openFemaProjectUrl(project.gmProjectId);
 
   return (
     <article className="space-y-4">
@@ -112,30 +114,56 @@ export function ProjectDetail({
           </ul>
         ) : (
           <p className="mt-2 text-sm text-ink-soft">
-            No screening flags apply to this worksheet in the currently filtered
-            portfolio.
+            No screening flags apply to this worksheet against its disaster cohort.
           </p>
         )}
       </section>
 
       <section className="panel p-4">
         <p className="kicker">Illustrative OMB analyst review workflow</p>
-        <h3 className="mt-1 font-serif text-lg text-navy">Internal evidence this public file does not include</h3>
+        <h3 className="mt-1 font-serif text-lg text-navy">Internal evidence needed</h3>
         <p className="mt-1 text-xs text-ink-soft">{CHECKLIST_DISCLAIMER}</p>
-        <p className="mt-2 text-xs text-ink-soft">
-          Exception review → reconciliation → reporting
+        <p className="mt-2 text-xs text-ink-soft">Exception review → reconciliation → reporting</p>
+        <div className="mt-3 overflow-x-auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Evidence</th>
+                <th>Public availability</th>
+                <th>Note</th>
+              </tr>
+            </thead>
+            <tbody>
+              {INTERNAL_EVIDENCE.map((item) => (
+                <tr key={item.id}>
+                  <td className="font-medium">{item.label}</td>
+                  <td>{item.availability}</td>
+                  <td className="text-ink-soft">{item.note}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="panel p-4">
+        <h3 className="font-serif text-lg text-navy">Source traceability</h3>
+        <p className="mt-1 text-sm text-ink-soft">
+          Source: OpenFEMA Public Assistance Funded Projects Details v2.
         </p>
-        <ul className="mt-3 space-y-2">
-          {ANALYST_CHECKLIST.map((item) => (
-            <li key={item.id} className="flex gap-3 rounded border border-rule bg-paper px-3 py-2">
-              <input type="checkbox" className="mt-1" aria-label={item.label} />
-              <div>
-                <div className="text-sm font-medium text-ink">{item.label}</div>
-                <p className="text-xs text-ink-soft">{item.note}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
+        {sourceUrl ? (
+          <p className="mt-2 text-sm">
+            <a href={sourceUrl} className="text-navy underline-offset-2 hover:underline" target="_blank" rel="noreferrer">
+              View source record
+            </a>
+            <span className="text-ink-soft"> · </span>
+            <a href={OPENFEMA_DATASET_PAGE} className="text-navy underline-offset-2 hover:underline" target="_blank" rel="noreferrer">
+              Dataset page
+            </a>
+          </p>
+        ) : (
+          <p className="mt-2 text-sm text-ink-soft">No Grants Manager project id is available for a source link.</p>
+        )}
       </section>
     </article>
   );

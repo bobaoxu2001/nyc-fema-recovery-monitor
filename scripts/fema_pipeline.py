@@ -463,7 +463,7 @@ def build_meta(
     source_check: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     return {
-        "title": "NYC FEMA Public Assistance Recovery Monitor",
+        "title": "New York FEMA Public Assistance Recovery Monitor",
         "retrievedAt": retrieved_at,
         "sourceCheck": source_check
         or {

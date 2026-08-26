@@ -14,7 +14,7 @@ import type { NamedTotal } from "@/lib/types";
 import { EmptyState } from "./status-panels";
 import { usePortfolio } from "./providers";
 
-export function CategoryChart({ rows }: { rows: NamedTotal[] }) {
+export function CategoryChart({ rows, interactive = true }: { rows: NamedTotal[]; interactive?: boolean }) {
   const { setFilters } = usePortfolio();
   if (!rows.length) {
     return <EmptyState title="No category totals" body="No projects match the current filters." />;
@@ -62,11 +62,15 @@ export function CategoryChart({ rows }: { rows: NamedTotal[] }) {
               dataKey="federalShare"
               fill="#215e57"
               radius={[0, 2, 2, 0]}
-              cursor="pointer"
-              onClick={(item) => {
-                const name = (item as NamedTotal).name;
-                if (name) setFilters({ category: name });
-              }}
+              cursor={interactive ? "pointer" : "default"}
+              onClick={
+                interactive
+                  ? (item) => {
+                      const name = (item as NamedTotal).name;
+                      if (name) setFilters({ category: name });
+                    }
+                  : undefined
+              }
             />
           </BarChart>
         </ResponsiveContainer>

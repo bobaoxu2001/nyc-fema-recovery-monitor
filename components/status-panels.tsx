@@ -4,8 +4,8 @@ export function LoadingState({ label }: { label: string }) {
       <p className="kicker">Loading</p>
       <p className="mt-2 font-serif text-xl text-navy">{label}</p>
       <p className="mx-auto mt-2 max-w-md text-sm">
-        The dashboard reads a processed OpenFEMA snapshot. Filters run in the
-        browser after that file loads.
+        This view needs the worksheet snapshot. Overview totals come from a
+        smaller summary and do not wait on this file.
       </p>
     </div>
   );

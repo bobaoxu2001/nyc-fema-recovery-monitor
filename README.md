@@ -1,4 +1,4 @@
-# NYC FEMA Public Assistance Recovery Monitor
+# New York FEMA Public Assistance Recovery Monitor
 
 A lightweight analytical prototype for FEMA Public Assistance grant portfolio monitoring and exception review.
 
@@ -23,8 +23,8 @@ It is not a disaster model, a chatbot, or a generic portfolio site.
 - Summarizes obligated Public Assistance worksheets for New York
 - Breaks federal obligations down by disaster, applicant, and FEMA work category
 - Offers an optional NYC-related subset (borough county, applicant city, or documented NYC entity name)
-- Flags records for analyst review using transparent, filter-aware rules
-- Opens a project detail view with an illustrative (not operational) review checklist
+- Flags records for analyst review using disaster-cohort amount screens and data-quality checks
+- Opens a project detail view with an evidence-needed table, not a pretend audit checklist
 
 The 90-second story is: public grant data in, a monitoring queue out. Flags are screening indicators, not compliance findings.
 

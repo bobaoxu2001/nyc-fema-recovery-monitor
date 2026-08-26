@@ -6,9 +6,9 @@ function project(id: string, amount: number, extra: Partial<Project> = {}): Proj
   return {
     id,
     gmProjectId: Number(id.replace(/\D/g, "") || 1),
-    disasterNumber: 4085,
-    disasterTitle: "HURRICANE SANDY",
-    femaDeclarationString: "DR-4085-NY",
+    disasterNumber: extra.disasterNumber ?? 4085,
+    disasterTitle: extra.disasterTitle ?? "HURRICANE SANDY",
+    femaDeclarationString: extra.femaDeclarationString ?? "DR-4085-NY",
     pwNumber: 1,
     title: `Project ${id}`,
     applicantId: extra.applicantId || "a1",
@@ -37,27 +37,51 @@ function project(id: string, amount: number, extra: Partial<Project> = {}): Proj
 }
 
 describe("computeSignals", () => {
-  it("does not apply percentile flags when n < 20", () => {
+  it("does not apply percentile flags when a disaster cohort has n < 20", () => {
     const rows = Array.from({ length: 10 }, (_, i) => project(`p${i}`, (i + 1) * 1000));
     const signals = computeSignals(rows);
-    expect(signals.p95).toBeNull();
     expect(Object.values(signals.flagsById).flat().some((flag) => flag.code === "high_dollar")).toBe(
+      false,
+    );
+    expect(Object.values(signals.flagsById).flat().some((flag) => flag.code === "extreme_outlier")).toBe(
       false,
     );
   });
 
-  it("flags top 5% and top 1% on a 100-project set", () => {
+  it("makes high-dollar and extreme mutually exclusive", () => {
     const rows = Array.from({ length: 100 }, (_, i) => project(`p${i}`, i + 1));
     const signals = computeSignals(rows);
-    expect(signals.p95).toBeCloseTo(95.05, 5);
-    expect(signals.p99).toBeCloseTo(99.01, 5);
     const high = rows.filter((row) => (signals.flagsById[row.id] || []).some((flag) => flag.code === "high_dollar"));
     const extreme = rows.filter((row) =>
       (signals.flagsById[row.id] || []).some((flag) => flag.code === "extreme_outlier"),
     );
-    expect(high.length).toBeGreaterThanOrEqual(5);
+    expect(high.length).toBeGreaterThanOrEqual(1);
     expect(extreme.length).toBeGreaterThanOrEqual(1);
-    expect(extreme.every((row) => high.some((item) => item.id === row.id))).toBe(true);
+    const overlap = high.filter((row) => extreme.some((item) => item.id === row.id));
+    expect(overlap).toHaveLength(0);
+  });
+
+  it("compares amount flags within the same disaster, not the whole file", () => {
+    const sandy = Array.from({ length: 100 }, (_, i) => project(`s${i}`, i + 1, { disasterNumber: 4085, femaDeclarationString: "DR-4085-NY" }));
+    const flood = Array.from({ length: 25 }, (_, i) =>
+      project(`f${i}`, i + 1, { disasterNumber: 4397, femaDeclarationString: "DR-4397-NY", disasterTitle: "FLOOD" }),
+    );
+    const signals = computeSignals([...sandy, ...flood]);
+    const floodMax = flood[24];
+    const sandyMid = sandy[49];
+    expect((signals.flagsById[floodMax.id] || []).map((flag) => flag.code)).toContain("extreme_outlier");
+    expect((signals.flagsById[sandyMid.id] || []).map((flag) => flag.code)).not.toContain("high_dollar");
+    expect((signals.flagsById[sandyMid.id] || []).map((flag) => flag.code)).not.toContain("extreme_outlier");
+  });
+
+  it("keeps amount flags if a later page filter isolates one applicant", () => {
+    const rows = Array.from({ length: 100 }, (_, i) =>
+      project(`p${i}`, i + 1, { applicantId: i === 99 ? "big" : "small", applicantName: i === 99 ? "Big" : "Small" }),
+    );
+    const universe = computeSignals(rows);
+    const onlyBig = rows.filter((row) => row.applicantId === "big");
+    expect(onlyBig).toHaveLength(1);
+    expect((universe.flagsById[onlyBig[0].id] || []).map((flag) => flag.code)).toContain("extreme_outlier");
   });
 
   it("flags missing fields, negatives, and duplicate-looking records", () => {
@@ -72,15 +96,15 @@ describe("computeSignals", () => {
     expect(signals.flagsById.d.map((flag) => flag.code)).toContain("duplicate_looking");
   });
 
-  it("marks applicant concentration at 10%", () => {
+  it("reports top applicant share without a concentrated label", () => {
     const rows = [
       ...Array.from({ length: 9 }, (_, i) => project(`s${i}`, 100, { applicantId: `s${i}`, applicantName: `Small ${i}` })),
       project("big", 1000, { applicantId: "big", applicantName: "Large Applicant" }),
     ];
     const signals = computeSignals(rows);
-    const large = signals.applicantConcentration.find((row) => row.key === "big");
-    expect(large?.concentrated).toBe(true);
-    expect(large?.share).toBeCloseTo(1000 / 1900);
+    expect(signals.applicantConcentration[0].key).toBe("big");
+    expect(signals.applicantConcentration[0].share).toBeCloseTo(1000 / 1900);
+    expect(signals.applicantConcentration.every((row) => row.concentrated === false)).toBe(true);
   });
 });
 

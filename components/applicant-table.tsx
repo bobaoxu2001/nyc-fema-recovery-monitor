@@ -5,7 +5,7 @@ import type { NamedTotal } from "@/lib/types";
 import { EmptyState } from "./status-panels";
 import { usePortfolio } from "./providers";
 
-export function ApplicantTable({ rows }: { rows: NamedTotal[] }) {
+export function ApplicantTable({ rows, interactive = true }: { rows: NamedTotal[]; interactive?: boolean }) {
   const { setFilters } = usePortfolio();
 
   if (!rows.length) {
@@ -17,7 +17,8 @@ export function ApplicantTable({ rows }: { rows: NamedTotal[] }) {
       <div className="border-b border-rule px-4 py-3">
         <h2 className="font-serif text-lg text-navy">Applicant portfolio</h2>
         <p className="text-xs text-ink-soft">
-          Top 15 applicants by federal share obligated in the selected set. Click a row to filter.
+          Top 15 applicants by federal share obligated in the selected set.
+          {interactive ? " Click a row to filter." : ""}
         </p>
       </div>
       <div className="overflow-x-auto">
@@ -34,8 +35,8 @@ export function ApplicantTable({ rows }: { rows: NamedTotal[] }) {
             {rows.map((row) => (
               <tr
                 key={row.key}
-                className="cursor-pointer hover:bg-navy-pale/60"
-                onClick={() => setFilters({ applicant: row.key })}
+                className={interactive ? "cursor-pointer hover:bg-navy-pale/60" : undefined}
+                onClick={interactive ? () => setFilters({ applicant: row.key }) : undefined}
               >
                 <td className="max-w-[280px]">{row.name}</td>
                 <td className="text-right tabular">{formatCount(row.projects)}</td>

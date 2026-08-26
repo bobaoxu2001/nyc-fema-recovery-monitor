@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -32,11 +33,12 @@ import {
 } from "@/lib/types";
 
 type DataState = {
-  loading: boolean;
+  worksheetsStatus: "idle" | "loading" | "ready" | "error";
   error: string | null;
   meta: SnapshotMeta;
   summary: PortfolioSummary;
   projects: Project[];
+  loadWorksheets: () => void;
 };
 
 const DataContext = createContext<DataState | null>(null);
@@ -65,50 +67,49 @@ export function DataProvider({
   children: ReactNode;
   initialSummary?: PortfolioSummary;
 }) {
-  const [state, setState] = useState<DataState>({
-    loading: true,
-    error: null,
-    meta: initialSummary.meta,
-    summary: initialSummary,
-    projects: [],
-  });
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [worksheetsStatus, setWorksheetsStatus] = useState<DataState["worksheetsStatus"]>("idle");
+  const [error, setError] = useState<string | null>(null);
+  const started = useRef(false);
 
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      try {
-        const response = await fetch("/data/projects.json");
-        if (!response.ok) {
-          throw new Error(`Snapshot HTTP ${response.status}`);
-        }
-        const snapshot = (await response.json()) as Snapshot;
-        if (cancelled) return;
-        setState((current) => ({
-          loading: false,
-          error: null,
-          meta: snapshot.meta ?? current.meta,
-          summary: current.summary,
-          projects: expandProjects(snapshot),
-        }));
-      } catch (error) {
-        if (cancelled) return;
-        setState((current) => ({
-          ...current,
-          loading: false,
-          error:
-            error instanceof Error
-              ? error.message
-              : "The processed OpenFEMA snapshot could not be loaded.",
-        }));
-      }
-    }
-    load();
-    return () => {
-      cancelled = true;
-    };
+  const loadWorksheets = useCallback(() => {
+    if (started.current) return;
+    started.current = true;
+    setWorksheetsStatus("loading");
+    fetch("/data/projects.json")
+      .then((response) => {
+        if (!response.ok) throw new Error(`Snapshot HTTP ${response.status}`);
+        return response.json() as Promise<Snapshot>;
+      })
+      .then((snapshot) => {
+        setProjects(expandProjects(snapshot));
+        setWorksheetsStatus("ready");
+        setError(null);
+      })
+      .catch((err: unknown) => {
+        started.current = false;
+        setWorksheetsStatus("error");
+        setError(
+          err instanceof Error
+            ? err.message
+            : "The processed OpenFEMA snapshot could not be loaded.",
+        );
+      });
   }, []);
 
-  return <DataContext.Provider value={state}>{children}</DataContext.Provider>;
+  const value = useMemo<DataState>(
+    () => ({
+      worksheetsStatus,
+      error,
+      meta: initialSummary.meta,
+      summary: initialSummary,
+      projects,
+      loadWorksheets,
+    }),
+    [worksheetsStatus, error, initialSummary, projects, loadWorksheets],
+  );
+
+  return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 }
 
 export function FilterProvider({ children }: { children: ReactNode }) {
@@ -136,19 +137,36 @@ export function useFilters() {
   return ctx;
 }
 
+export function useWorksheets() {
+  const { loadWorksheets, worksheetsStatus } = useData();
+  useEffect(() => {
+    loadWorksheets();
+  }, [loadWorksheets]);
+  return worksheetsStatus;
+}
+
 export function usePortfolio() {
-  const { projects, loading, error, meta, summary } = useData();
+  const { projects, worksheetsStatus, error, meta, summary } = useData();
   const { filters, setFilters, resetFilters } = useFilters();
+  const ready = worksheetsStatus === "ready";
+
+  const geographyUniverse = useMemo(() => {
+    if (!ready) return [];
+    return applyBaseFilters(projects, {
+      ...DEFAULT_FILTERS,
+      geography: filters.geography,
+    });
+  }, [projects, ready, filters.geography]);
+
+  const signals: PortfolioSignals = useMemo(
+    () => computeSignals(geographyUniverse),
+    [geographyUniverse],
+  );
 
   const baseFiltered = useMemo(() => {
     const { flag: _flag, ...rest } = filters;
     return applyBaseFilters(projects, rest);
   }, [projects, filters]);
-
-  const signals: PortfolioSignals = useMemo(
-    () => computeSignals(baseFiltered),
-    [baseFiltered],
-  );
 
   const filtered = useMemo(() => {
     if (filters.flag === "all") return baseFiltered;
@@ -166,29 +184,77 @@ export function usePortfolio() {
   const liveByApplicant = useMemo(() => totalsByApplicant(filtered, 15), [filtered]);
   const liveByCategory = useMemo(() => totalsByCategory(filtered), [filtered]);
 
-  const usingSummary = projects.length === 0 && isDefaultPortfolio(filters);
   const summarySlice = filters.geography === "nyc" ? summary.nyc : summary.allNy;
+  const disasterRow =
+    filters.disaster === "all"
+      ? null
+      : summarySlice.byDisaster.find((row) => row.key === filters.disaster) || null;
 
-  const kpis: Kpis = usingSummary
-    ? {
-        projectCount: summarySlice.projectCount,
-        federalShare: summarySlice.federalShare,
-        applicantCount: summarySlice.applicantCount,
-        disasterCount: summarySlice.disasterCount,
-        medianProject: summarySlice.medianProject,
-        averageProject: summarySlice.averageProject,
-        largestProject: summarySlice.largestProject,
-        categoryCount: summarySlice.categoryCount,
-        flaggedCount: null,
-      }
-    : liveKpis;
-  const byDisaster: NamedTotal[] = usingSummary ? summarySlice.byDisaster : liveByDisaster;
-  const byApplicant: NamedTotal[] = usingSummary ? summarySlice.byApplicant : liveByApplicant;
-  const byCategory: NamedTotal[] = usingSummary ? summarySlice.byCategory : liveByCategory;
+  const usingSummary = !ready && isDefaultPortfolio(filters);
+  const usingSummaryDisaster =
+    !ready && filters.disaster !== "all" && isDefaultPortfolio({ ...filters, disaster: "all" });
+
+  let kpis: Kpis;
+  let byDisaster: NamedTotal[];
+  let byApplicant: NamedTotal[];
+  let byCategory: NamedTotal[];
+
+  if (usingSummary) {
+    kpis = {
+      projectCount: summarySlice.projectCount,
+      federalShare: summarySlice.federalShare,
+      applicantCount: summarySlice.applicantCount,
+      disasterCount: summarySlice.disasterCount,
+      medianProject: summarySlice.medianProject,
+      averageProject: summarySlice.averageProject,
+      largestProject: summarySlice.largestProject,
+      categoryCount: summarySlice.categoryCount,
+      flaggedCount: null,
+    };
+    byDisaster = summarySlice.byDisaster;
+    byApplicant = summarySlice.byApplicant;
+    byCategory = summarySlice.byCategory;
+  } else if (usingSummaryDisaster && disasterRow) {
+    kpis = {
+      projectCount: disasterRow.projects,
+      federalShare: disasterRow.federalShare,
+      applicantCount: null,
+      disasterCount: 1,
+      medianProject: null,
+      averageProject: null,
+      largestProject: null,
+      categoryCount: null,
+      flaggedCount: null,
+    };
+    byDisaster = summarySlice.byDisaster;
+    byApplicant = [];
+    byCategory = [];
+  } else if (ready) {
+    kpis = liveKpis;
+    byDisaster = liveByDisaster;
+    byApplicant = liveByApplicant;
+    byCategory = liveByCategory;
+  } else {
+    kpis = {
+      projectCount: summarySlice.projectCount,
+      federalShare: summarySlice.federalShare,
+      applicantCount: summarySlice.applicantCount,
+      disasterCount: summarySlice.disasterCount,
+      medianProject: summarySlice.medianProject,
+      averageProject: summarySlice.averageProject,
+      largestProject: summarySlice.largestProject,
+      categoryCount: summarySlice.categoryCount,
+      flaggedCount: null,
+    };
+    byDisaster = summarySlice.byDisaster;
+    byApplicant = summarySlice.byApplicant;
+    byCategory = summarySlice.byCategory;
+  }
 
   return {
-    loading: false,
-    hydrating: loading,
+    loading: worksheetsStatus === "loading",
+    hydrating: worksheetsStatus === "loading",
+    ready,
     error,
     meta,
     allProjects: projects,
@@ -203,6 +269,6 @@ export function usePortfolio() {
     byApplicant,
     byCategory,
     summary,
-    ready: !loading,
+    summaryMode: !ready,
   };
 }

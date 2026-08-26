@@ -2,39 +2,36 @@
 
 import Link from "next/link";
 import { flaggedProjects } from "@/lib/flags";
-import { formatCompactUsd, formatPercent, formatUsd } from "@/lib/format";
+import { formatCompactUsd, formatPercent } from "@/lib/format";
 import { FlagStack } from "./flag-badge";
 import { EmptyState } from "./status-panels";
 import { usePortfolio } from "./providers";
 
 export function ExceptionMonitor() {
-  const { filtered, signals, kpis } = usePortfolio();
+  const { filtered, signals, kpis, byApplicant, byCategory } = usePortfolio();
   const rows = flaggedProjects(filtered, signals.flagsById).slice(0, 40);
-  const concentratedApplicants = signals.applicantConcentration.filter((row) => row.concentrated);
-  const concentratedCategories = signals.categoryConcentration.filter((row) => row.concentrated);
+  const topApplicant = byApplicant[0];
+  const topCategory = byCategory[0];
 
   return (
     <div className="space-y-4">
       <section className="panel p-4">
         <h2 className="font-serif text-lg text-navy">Why a record is flagged</h2>
         <p className="mt-1 text-sm text-ink-soft">
-          These flags help an analyst decide what to open first. They are not
-          findings of non-compliance, fraud, or ineligibility. Thresholds are
-          calculated on the currently selected universe, so a large Sandy
-          worksheet may be typical there and unusual in a smaller disaster.
+          Amount flags compare a worksheet with other projects in the same
+          disaster. They do not change when you filter to one applicant. High-dollar
+          is the 95th–99th percentile. Extreme is the 99th percentile and above.
+          A project gets one amount flag, not both. These are not findings of
+          non-compliance.
         </p>
         <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
           <div className="rounded border border-rule bg-paper px-3 py-2">
-            <dt className="text-xs uppercase tracking-[0.12em] text-ink-faint">High-dollar (p95)</dt>
-            <dd className="mt-1 font-serif text-xl text-navy tabular">
-              {formatUsd(signals.p95)}
-            </dd>
+            <dt className="text-xs uppercase tracking-[0.12em] text-ink-faint">Amount baseline</dt>
+            <dd className="mt-1 font-serif text-xl text-navy">Same disaster</dd>
           </div>
           <div className="rounded border border-rule bg-paper px-3 py-2">
-            <dt className="text-xs uppercase tracking-[0.12em] text-ink-faint">Extreme outlier (p99)</dt>
-            <dd className="mt-1 font-serif text-xl text-navy tabular">
-              {formatUsd(signals.p99)}
-            </dd>
+            <dt className="text-xs uppercase tracking-[0.12em] text-ink-faint">Minimum cohort</dt>
+            <dd className="mt-1 font-serif text-xl text-navy tabular">20 projects</dd>
           </div>
           <div className="rounded border border-rule bg-paper px-3 py-2">
             <dt className="text-xs uppercase tracking-[0.12em] text-ink-faint">Flagged for review</dt>
@@ -47,53 +44,37 @@ export function ExceptionMonitor() {
 
       <section className="grid gap-4 lg:grid-cols-2">
         <article className="panel p-4">
-          <h2 className="font-serif text-lg text-navy">Applicant concentration</h2>
+          <h2 className="font-serif text-lg text-navy">Portfolio concentration indicator</h2>
           <p className="text-xs text-ink-soft">
-            Portfolio concentration indicator. An applicant is listed here if it
-            accounts for 10% or more of federal obligations in the selected set.
-            Concentration is common in disaster recovery and is not a compliance
-            problem.
+            Share of federal obligations in the current view. This is descriptive.
+            It is not a risk finding, and there is no extra threshold label.
           </p>
-          {concentratedApplicants.length ? (
-            <ul className="mt-3 space-y-2 text-sm">
-              {concentratedApplicants.map((row) => (
-                <li key={row.key} className="flex justify-between gap-3 border-b border-rule/70 py-1">
-                  <span>{row.name}</span>
-                  <span className="tabular text-ink-soft">
-                    {formatCompactUsd(row.federalShare)} · {formatPercent(row.share)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-3 text-sm text-ink-soft">
-              No applicant is at or above 10% of selected federal obligations.
-            </p>
-          )}
+          <dl className="mt-3 space-y-2 text-sm">
+            <div className="flex justify-between gap-3 border-b border-rule/70 py-1">
+              <dt>Top applicant share</dt>
+              <dd className="tabular">
+                {topApplicant ? `${formatPercent(topApplicant.share)} · ${topApplicant.name}` : "Unavailable"}
+              </dd>
+            </div>
+            <div className="flex justify-between gap-3 border-b border-rule/70 py-1">
+              <dt>Top category share</dt>
+              <dd className="tabular">
+                {topCategory ? `${formatPercent(topCategory.share)} · ${topCategory.name}` : "Unavailable"}
+              </dd>
+            </div>
+          </dl>
         </article>
         <article className="panel p-4">
-          <h2 className="font-serif text-lg text-navy">Category concentration</h2>
+          <h2 className="font-serif text-lg text-navy">Largest holders in this view</h2>
           <p className="text-xs text-ink-soft">
-            A work category is listed if it accounts for 25% or more of federal
-            obligations in the selected set. Emergency work often dominates early
-            in a disaster.
+            {topApplicant
+              ? `${topApplicant.name} accounts for ${formatCompactUsd(topApplicant.federalShare)}.`
+              : "No applicant totals in this selection."}
           </p>
-          {concentratedCategories.length ? (
-            <ul className="mt-3 space-y-2 text-sm">
-              {concentratedCategories.map((row) => (
-                <li key={row.key} className="flex justify-between gap-3 border-b border-rule/70 py-1">
-                  <span>{row.name}</span>
-                  <span className="tabular text-ink-soft">
-                    {formatCompactUsd(row.federalShare)} · {formatPercent(row.share)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-3 text-sm text-ink-soft">
-              No work category is at or above 25% of selected federal obligations.
-            </p>
-          )}
+          <p className="mt-2 text-xs text-ink-soft">
+            Concentration is common in disaster recovery. It does not mean the
+            funding is improper.
+          </p>
         </article>
       </section>
 
@@ -101,8 +82,7 @@ export function ExceptionMonitor() {
         <div className="border-b border-rule px-4 py-3">
           <h2 className="font-serif text-lg text-navy">Projects requiring review</h2>
           <p className="text-xs text-ink-soft">
-            Up to 40 flagged worksheets, ordered by federal share. Open a row to
-            see the suggested analyst review steps.
+            Up to 40 flagged worksheets, ordered by federal share.
           </p>
         </div>
         {rows.length ? (

@@ -209,12 +209,12 @@ export type NamedTotal = {
 export type Kpis = {
   projectCount: number;
   federalShare: number;
-  applicantCount: number;
-  disasterCount: number;
+  applicantCount: number | null;
+  disasterCount: number | null;
   medianProject: number | null;
   averageProject: number | null;
   largestProject: number | null;
-  categoryCount: number;
+  categoryCount: number | null;
   flaggedCount: number | null;
 };
 

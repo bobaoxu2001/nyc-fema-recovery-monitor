@@ -1,48 +1,51 @@
-export const ANALYST_CHECKLIST = [
+export const INTERNAL_EVIDENCE = [
   {
     id: "scope",
-    label: "Grant scope reviewed",
-    note: "Does the worksheet description match the declared incident and eligible work category?",
+    label: "Grant scope",
+    availability: "Partial",
+    note: "Worksheet title, disaster, and work category are in OpenFEMA.",
   },
   {
     id: "cost",
-    label: "Cost information reviewed",
-    note: "Are project amount, federal share, and any adjustments reconcilable?",
-  },
-  {
-    id: "procurement",
-    label: "Procurement documentation",
-    note: "Would an analyst next request bid documents, procurement method, and contract award records?",
+    label: "Project cost",
+    availability: "Partial",
+    note: "Project amount and federal share obligated are in OpenFEMA.",
   },
   {
     id: "contract",
-    label: "Contract documentation",
-    note: "Is there a contract or force-account record that supports the obligated amount?",
+    label: "Contract",
+    availability: "Not in OpenFEMA",
+    note: "Would be requested from the applicant or City files.",
+  },
+  {
+    id: "procurement",
+    label: "Procurement records",
+    availability: "Not in OpenFEMA",
+    note: "Bid method and award documentation are not in the public file.",
   },
   {
     id: "invoice",
-    label: "Invoice documentation",
-    note: "Do invoices support the costs claimed on the project worksheet?",
+    label: "Invoice",
+    availability: "Not in OpenFEMA",
+    note: "Cost support would come from internal grant files.",
   },
   {
     id: "payment",
     label: "Proof of payment",
-    note: "Is there evidence the applicant paid eligible costs before or as part of reimbursement?",
+    availability: "Not in OpenFEMA",
+    note: "Payment evidence is not published in this dataset.",
   },
   {
     id: "insurance",
-    label: "Insurance considerations",
-    note: "Has insurance coverage, proceeds, or a duplication-of-benefits check been documented?",
+    label: "Insurance",
+    availability: "Not in OpenFEMA",
+    note: "Coverage and proceeds would be an internal duplication-of-benefits check.",
   },
   {
     id: "reimbursement",
     label: "Reimbursement status",
-    note: "What has been obligated versus drawn, reimbursed, or still outstanding?",
-  },
-  {
-    id: "outstanding",
-    label: "Outstanding information",
-    note: "What is still needed from the agency, the State, or FEMA before closeout?",
+    availability: "Internal system needed",
+    note: "Obligated versus drawn or reimbursed is not in OpenFEMA.",
   },
 ] as const;
 

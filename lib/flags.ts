@@ -18,9 +18,9 @@ const FLAG_META: Record<FlagCode, Omit<ProjectFlag, "reason">> = {
   },
   extreme_outlier: {
     code: "extreme_outlier",
-    label: "Extreme amount outlier",
+    label: "Extreme amount",
     suggestedReview:
-      "Confirm why this amount is far above typical worksheets in the selected portfolio, including whether the work is bundled.",
+      "Confirm why this amount is far above typical worksheets in the same disaster, including whether the work is bundled.",
   },
   missing_fields: {
     code: "missing_fields",
@@ -40,9 +40,6 @@ const FLAG_META: Record<FlagCode, Omit<ProjectFlag, "reason">> = {
   },
 };
 
-const APPLICANT_CONCENTRATION = 0.1;
-const CATEGORY_CONCENTRATION = 0.25;
-
 export function flagDefinitions(): Array<{
   code: FlagCode;
   label: string;
@@ -53,12 +50,13 @@ export function flagDefinitions(): Array<{
       code: "high_dollar",
       label: FLAG_META.high_dollar.label,
       method:
-        "Federal share is above the 95th percentile in the current portfolio. Applied only when at least 20 positive-amount projects are in the selection.",
+        "Federal share is at or above the 95th percentile and below the 99th percentile of positive-amount worksheets in the same disaster. Applied only when that disaster has at least 20 positive-amount projects. This flag is not stacked with Extreme.",
     },
     {
       code: "extreme_outlier",
       label: FLAG_META.extreme_outlier.label,
-      method: "Federal share is above the 99th percentile in the current portfolio.",
+      method:
+        "Federal share is at or above the 99th percentile of positive-amount worksheets in the same disaster. Applied only when that disaster has at least 20 positive-amount projects.",
     },
     {
       code: "missing_fields",
@@ -88,8 +86,6 @@ function groupTotals(
   projects: Project[],
   keyFn: (project: Project) => string,
   nameFn: (project: Project) => string,
-  total: number,
-  threshold: number,
 ): ConcentrationRow[] {
   const map = new Map<string, { name: string; federalShare: number; projects: number }>();
   for (const project of projects) {
@@ -99,88 +95,98 @@ function groupTotals(
     current.projects += 1;
     map.set(key, current);
   }
-  const rows: ConcentrationRow[] = [...map.entries()]
+  const total = sumFederal(projects);
+  return [...map.entries()]
     .map(([key, value]) => ({
       key,
       name: value.name,
       federalShare: value.federalShare,
       projects: value.projects,
       share: total === 0 ? 0 : value.federalShare / total,
-      concentrated: total !== 0 && value.federalShare / total >= threshold,
+      concentrated: false,
     }))
     .sort((a, b) => b.federalShare - a.federalShare);
-  return rows;
 }
 
-export function computeSignals(projects: Project[]): PortfolioSignals {
-  const positive = projects
-    .map((project) => project.federalShare)
-    .filter((value): value is number => typeof value === "number" && value > 0);
-  const enoughForPercentiles = positive.length >= 20;
-  const p95 = enoughForPercentiles ? percentile(positive, 0.95) : null;
-  const p99 = enoughForPercentiles ? percentile(positive, 0.99) : null;
-  const flagsById: Record<string, ProjectFlag[]> = {};
+function usd(value: number): string {
+  return value.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  });
+}
 
+export function computeSignals(universe: Project[]): PortfolioSignals {
+  const flagsById: Record<string, ProjectFlag[]> = {};
   const addFlag = (id: string, flag: ProjectFlag) => {
     if (!flagsById[id]) flagsById[id] = [];
     flagsById[id].push(flag);
   };
 
-  for (const project of projects) {
-    const amount = project.federalShare;
-    if (typeof amount === "number" && amount < 0) {
-      addFlag(project.id, {
-        ...FLAG_META.negative_obligation,
-        reason: `The public record contains a negative federal share (${amount.toLocaleString("en-US", { style: "currency", currency: "USD" })}), which may reflect an adjustment or deobligation.`,
-      });
-    }
-    if (project.missingFields.length > 0) {
-      addFlag(project.id, {
-        ...FLAG_META.missing_fields,
-        reason: `One or more fields used by this monitor are missing: ${project.missingFields.join(", ")}.`,
-      });
-    }
-    if (project.duplicateGroup) {
-      addFlag(project.id, {
-        ...FLAG_META.duplicate_looking,
-        reason:
-          "Another record has similar identifying attributes. Manual review may be useful.",
-      });
-    }
-    if (typeof amount === "number" && amount > 0 && p95 != null && amount >= p95) {
-      addFlag(project.id, {
-        ...FLAG_META.high_dollar,
-        reason: `Federal share is above the 95th percentile in the current portfolio (${p95.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 })}).`,
-      });
-    }
-    if (typeof amount === "number" && amount > 0 && p99 != null && amount >= p99) {
-      addFlag(project.id, {
-        ...FLAG_META.extreme_outlier,
-        reason: `Federal share is above the 99th percentile in the current portfolio (${p99.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 })}).`,
-      });
+  const byDisaster = new Map<number, Project[]>();
+  for (const project of universe) {
+    const list = byDisaster.get(project.disasterNumber) || [];
+    list.push(project);
+    byDisaster.set(project.disasterNumber, list);
+  }
+
+  for (const [, cohort] of byDisaster) {
+    const positive = cohort
+      .map((project) => project.federalShare)
+      .filter((value): value is number => typeof value === "number" && value > 0);
+    const p95 = positive.length >= 20 ? percentile(positive, 0.95) : null;
+    const p99 = positive.length >= 20 ? percentile(positive, 0.99) : null;
+    const disasterName = cohort[0]?.femaDeclarationString || `Disaster ${cohort[0]?.disasterNumber}`;
+
+    for (const project of cohort) {
+      const amount = project.federalShare;
+      if (typeof amount === "number" && amount < 0) {
+        addFlag(project.id, {
+          ...FLAG_META.negative_obligation,
+          reason: `The public record contains a negative federal share (${usd(amount)}), which may reflect an adjustment or deobligation.`,
+        });
+      }
+      if (project.missingFields.length > 0) {
+        addFlag(project.id, {
+          ...FLAG_META.missing_fields,
+          reason: `One or more fields used by this monitor are missing: ${project.missingFields.join(", ")}.`,
+        });
+      }
+      if (project.duplicateGroup) {
+        addFlag(project.id, {
+          ...FLAG_META.duplicate_looking,
+          reason: "Another record has similar identifying attributes. Manual review may be useful.",
+        });
+      }
+      if (typeof amount === "number" && amount > 0 && p99 != null && amount >= p99) {
+        addFlag(project.id, {
+          ...FLAG_META.extreme_outlier,
+          reason: `Federal share is at or above the 99th percentile of ${disasterName} worksheets (${usd(p99)}). Compared with other projects in the same disaster, not the current page filter.`,
+        });
+      } else if (typeof amount === "number" && amount > 0 && p95 != null && amount >= p95) {
+        addFlag(project.id, {
+          ...FLAG_META.high_dollar,
+          reason: `Federal share is in the 95th–99th percentile of ${disasterName} worksheets (threshold ${usd(p95)}). Compared with other projects in the same disaster, not the current page filter.`,
+        });
+      }
     }
   }
 
-  const total = sumFederal(projects);
   return {
     flagsById,
-    highDollarThreshold: p95,
-    extremeThreshold: p99,
-    p95,
-    p99,
+    highDollarThreshold: null,
+    extremeThreshold: null,
+    p95: null,
+    p99: null,
     applicantConcentration: groupTotals(
-      projects,
+      universe,
       (project) => project.applicantId,
       (project) => project.applicantName,
-      total,
-      APPLICANT_CONCENTRATION,
     ),
     categoryConcentration: groupTotals(
-      projects,
+      universe,
       (project) => project.category || "Unspecified",
       (project) => project.category || "Unspecified",
-      total,
-      CATEGORY_CONCENTRATION,
     ),
   };
 }

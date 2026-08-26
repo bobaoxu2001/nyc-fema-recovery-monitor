@@ -32,7 +32,7 @@ export function DisasterChart({ rows }: { rows: NamedTotal[] }) {
         <div>
           <h2 className="font-serif text-lg text-navy">Federal obligations by disaster</h2>
           <p className="text-xs text-ink-soft">
-            Ranked by federal share obligated. Click a bar to filter the portfolio to that declaration.
+            Ranked by federal share obligated. Click a bar to focus that declaration.
           </p>
         </div>
       </div>

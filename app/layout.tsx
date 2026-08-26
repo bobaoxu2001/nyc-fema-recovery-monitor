@@ -20,9 +20,9 @@ const ibmPlexSans = IBM_Plex_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "NYC FEMA Public Assistance Recovery Monitor",
+  title: "New York FEMA Public Assistance Recovery Monitor",
   description:
-    "An independent analytical prototype exploring FEMA Public Assistance grant portfolio monitoring using OpenFEMA data.",
+    "An independent analytical prototype exploring FEMA Public Assistance grant portfolio monitoring for New York State, with an NYC-related analytical view, using OpenFEMA data.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -26,22 +26,22 @@ export function SiteHeader() {
             <p className="kicker">Independent analytical prototype</p>
             <Link href="/" className="mt-2 block">
               <h1 className="font-serif text-[1.85rem] leading-tight text-navy md:text-[2.15rem]">
-                NYC FEMA Public Assistance Recovery Monitor
+                New York FEMA Public Assistance Recovery Monitor
               </h1>
             </Link>
             <p className="mt-2 text-sm text-ink">
-              New York State Public Assistance · OpenFEMA
+              New York State portfolio · NYC-related analytical view
             </p>
             <p className="mt-1 max-w-2xl text-sm text-ink-soft">
-              A small analytical prototype for grant portfolio monitoring and
-              exception review. NYC-related is an optional analyst subset, not an
-              official FEMA geography.
+              Built as an independent analytical prototype for an NYC
+              disaster-recovery grant-management use case. The data universe is
+              New York State Public Assistance.
             </p>
           </div>
           <div className="rounded border border-rule bg-paper px-3 py-2 text-right text-xs text-ink-soft">
-            <div>New York State FEMA Public Assistance portfolio</div>
+            <div>New York State Public Assistance · OpenFEMA</div>
             <div className="mt-1 text-sm text-ink">
-              Data refreshed: {formatRefreshShort(proven.retrievedAt)}
+              Snapshot updated {formatRefreshShort(proven.retrievedAt)}
             </div>
             <div className="mt-1 tabular">
               {formatProvenanceCount(proven.recordCount)} worksheets ·{" "}

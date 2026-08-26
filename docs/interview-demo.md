@@ -1,4 +1,4 @@
-# Interview demo — NYC FEMA Public Assistance Recovery Monitor
+# Interview demo — New York FEMA Public Assistance Recovery Monitor
 
 Live URL: https://nyc-fema-recovery-monitor.vercel.app
 
