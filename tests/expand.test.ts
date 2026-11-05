@@ -49,6 +49,10 @@ describe("expandProjects", () => {
         },
       ],
       applicants: [{ applicantId: "047-51000-00", name: "City of New York", city: "Brooklyn" }],
+      fields: ["gm", "d", "pw", "t", "a", "cc", "cat", "st", "ps", "sz", "co", "pa", "fs", "to", "dd", "fo", "lo", "it", "an", "ac"],
+      projects: [
+        [111, 4085, 9, "Coney Island Boardwalk", 0, 0, 0, 0, 0, 0, 0, 5000000, 3750000, 3750000, "2012-10-30", "2013-01-01", "2014-01-01", 0, 0, 0],
+      ],
       lookups: {
         cc: ["G"],
         cat: ["Parks, Recreational, and Other"],
@@ -57,18 +61,17 @@ describe("expandProjects", () => {
         sz: ["Large"],
         co: ["Kings County"],
         it: ["Hurricane"],
+        an: ["City of New York - Parks"],
+        ac: ["Brooklyn"],
       },
-      fields: ["gm", "d", "pw", "t", "a", "cc", "cat", "st", "ps", "sz", "co", "pa", "fs", "to", "dd", "fo", "lo", "it"],
-      projects: [
-        [111, 4085, 9, "Coney Island Boardwalk", 0, 0, 0, 0, 0, 0, 0, 5000000, 3750000, 3750000, "2012-10-30", "2013-01-01", "2014-01-01", 0],
-      ],
       nyc: { "111": ["borough_county"] },
     };
 
     const [project] = expandProjects(snapshot);
     expect(project.id).toBe("111");
     expect(project.applicantName).toBe("City of New York");
-    expect(project.applicantNameRaw).toBe("City of New York");
+    expect(project.applicantNameRaw).toBe("City of New York - Parks");
+    expect(project.applicantCity).toBe("Brooklyn");
     expect(project.category).toBe("Parks, Recreational, and Other");
     expect(project.county).toBe("Kings County");
     expect(project.federalShare).toBe(3750000);

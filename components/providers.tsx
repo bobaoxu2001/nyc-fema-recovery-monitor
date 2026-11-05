@@ -159,8 +159,14 @@ export function usePortfolio() {
   }, [projects, ready, filters.geography]);
 
   const signals: PortfolioSignals = useMemo(
-    () => computeSignals(geographyUniverse),
-    [geographyUniverse],
+    () =>
+      computeSignals(
+        geographyUniverse,
+        filters.geography === "nyc"
+          ? "the NYC-related analytical universe"
+          : "the All New York universe",
+      ),
+    [geographyUniverse, filters.geography],
   );
 
   const baseFiltered = useMemo(() => {

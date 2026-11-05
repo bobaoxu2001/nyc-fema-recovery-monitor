@@ -183,7 +183,16 @@ class TransformTests(unittest.TestCase):
         self.assertEqual(report["federalShare"]["sum"], 3750000)
         encoded = encode_public_snapshot(transformed, {"recordCount": 1})
         self.assertEqual(encoded["fields"][0], "gm")
+        self.assertEqual(encoded["fields"][-2:], ["an", "ac"])
         self.assertEqual(encoded["projects"][0][0], 111)
+        self.assertEqual(
+            encoded["lookups"]["an"][encoded["projects"][0][-2]],
+            "City of New York",
+        )
+        self.assertEqual(
+            encoded["lookups"]["ac"][encoded["projects"][0][-1]],
+            "Brooklyn",
+        )
         self.assertEqual(encoded["nyc"]["111"], ["borough_county", "applicant_city", "applicant_name"])
 
 

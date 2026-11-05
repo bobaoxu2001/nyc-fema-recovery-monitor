@@ -17,7 +17,7 @@ function ProjectsBody() {
       <FilterBar />
       <p className="text-sm text-ink-soft">
         {formatCount(kpis.projectCount)} worksheets in the selected portfolio.
-        Sort, search, export, or open a row for the review workflow.
+        Sort, search, export, or open a worksheet title for the review workflow.
       </p>
       <ProjectTable projects={filtered} flagsById={signals.flagsById} />
     </div>

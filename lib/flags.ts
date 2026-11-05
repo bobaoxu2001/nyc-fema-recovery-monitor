@@ -13,8 +13,8 @@ import type {
 const FLAG_META: Record<FlagCode, Omit<ProjectFlag, "reason">> = {
   high_dollar: {
     code: "high_dollar",
-    label: "High-dollar project",
-    suggestedReview: "Confirm project context and supporting cost documentation.",
+    label: "High-dollar worksheet",
+    suggestedReview: "Confirm worksheet context and supporting cost documentation.",
   },
   extreme_outlier: {
     code: "extreme_outlier",
@@ -24,7 +24,7 @@ const FLAG_META: Record<FlagCode, Omit<ProjectFlag, "reason">> = {
   },
   missing_fields: {
     code: "missing_fields",
-    label: "Missing project information",
+    label: "Missing worksheet information",
     suggestedReview: "Determine whether the information exists in internal grant records.",
   },
   negative_obligation: {
@@ -36,7 +36,7 @@ const FLAG_META: Record<FlagCode, Omit<ProjectFlag, "reason">> = {
   duplicate_looking: {
     code: "duplicate_looking",
     label: "Potential duplicate-looking record",
-    suggestedReview: "Compare project identifiers and underlying project documentation.",
+    suggestedReview: "Compare worksheet identifiers and underlying supporting documentation.",
   },
 };
 
@@ -50,13 +50,13 @@ export function flagDefinitions(): Array<{
       code: "high_dollar",
       label: FLAG_META.high_dollar.label,
       method:
-        "Federal share is at or above the 95th percentile and below the 99th percentile of positive-amount worksheets in the same disaster. Applied only when that disaster has at least 20 positive-amount projects. This flag is not stacked with Extreme.",
+        "Federal share is at or above the 95th percentile and below the 99th percentile of positive-amount worksheets in the same disaster within the selected All New York or NYC-related universe. Applied only when that cohort has at least 20 positive-amount worksheets. Other filters do not change the baseline. This flag is not stacked with Extreme.",
     },
     {
       code: "extreme_outlier",
       label: FLAG_META.extreme_outlier.label,
       method:
-        "Federal share is at or above the 99th percentile of positive-amount worksheets in the same disaster. Applied only when that disaster has at least 20 positive-amount projects.",
+        "Federal share is at or above the 99th percentile of positive-amount worksheets in the same disaster within the selected All New York or NYC-related universe. Applied only when that cohort has at least 20 positive-amount worksheets. Other filters do not change the baseline.",
     },
     {
       code: "missing_fields",
@@ -116,7 +116,10 @@ function usd(value: number): string {
   });
 }
 
-export function computeSignals(universe: Project[]): PortfolioSignals {
+export function computeSignals(
+  universe: Project[],
+  cohortLabel = "the selected geography universe",
+): PortfolioSignals {
   const flagsById: Record<string, ProjectFlag[]> = {};
   const addFlag = (id: string, flag: ProjectFlag) => {
     if (!flagsById[id]) flagsById[id] = [];
@@ -161,12 +164,12 @@ export function computeSignals(universe: Project[]): PortfolioSignals {
       if (typeof amount === "number" && amount > 0 && p99 != null && amount >= p99) {
         addFlag(project.id, {
           ...FLAG_META.extreme_outlier,
-          reason: `Federal share is at or above the 99th percentile of ${disasterName} worksheets (${usd(p99)}). Compared with other projects in the same disaster, not the current page filter.`,
+          reason: `Federal share is at or above the 99th percentile of ${disasterName} worksheets in ${cohortLabel} (${usd(p99)}). Other page filters do not change this baseline.`,
         });
       } else if (typeof amount === "number" && amount > 0 && p95 != null && amount >= p95) {
         addFlag(project.id, {
           ...FLAG_META.high_dollar,
-          reason: `Federal share is in the 95th–99th percentile of ${disasterName} worksheets (threshold ${usd(p95)}). Compared with other projects in the same disaster, not the current page filter.`,
+          reason: `Federal share is in the 95th–99th percentile of ${disasterName} worksheets in ${cohortLabel} (threshold ${usd(p95)}). Other page filters do not change this baseline.`,
         });
       }
     }

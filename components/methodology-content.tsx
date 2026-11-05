@@ -213,11 +213,12 @@ export function MethodologyContent() {
         <h3 className="font-serif text-xl text-navy">Monitoring flags</h3>
         <p className="mt-2 text-sm text-ink-soft">
           Amount flags use the disaster as the peer group. A Sandy worksheet is
-          compared with other Sandy worksheets. The flag does not change when the
-          page is filtered to one applicant. High-dollar and Extreme are mutually
-          exclusive. A 95th-percentile cut surfaces roughly the top twentieth of
-          each disaster, so a review queue near 5% of worksheets is partly by
-          design. It is not an estimated error or ineligibility rate.
+          compared with other Sandy worksheets within the selected All New York or
+          NYC-related universe. Applicant, category, year, amount, flag-status, and
+          search filters do not change that baseline. High-dollar and Extreme are
+          mutually exclusive. A 95th-percentile cut surfaces roughly the top
+          twentieth of each disaster, so a review queue near 5% of worksheets is
+          partly by design. It is not an estimated error or ineligibility rate.
         </p>
         {mix ? (
           <p className="mt-2 text-sm text-ink">
@@ -271,8 +272,9 @@ Grant portfolio monitoring → Exception review → Reconciliation → Reporting
             non-compliance, fraud, grant ineligibility, or improper expenditure.
           </li>
           <li>
-            Federal-share amounts are nominal and already net of the applicable
-            cost share; they are not a like-for-like comparison across disasters.
+            Federal-share amounts are nominal and reflect applicable federal
+            cost-share percentages, which can vary by declaration. Cross-disaster
+            comparisons are therefore descriptive rather than strictly like-for-like.
           </li>
           <li>
             This snapshot is a current-state obligated portfolio, not a measure of

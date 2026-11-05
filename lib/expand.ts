@@ -78,6 +78,14 @@ export function expandProject(
   const id = row.id || (gm != null && gm !== "" ? String(gm) : `${row.d}-${row.pw}-${row.a}`);
   const category = lookupText(lookups?.cat, row.cat) || lookupText(lookups?.cc, row.cc) || "Unspecified";
   const categoryCode = lookupText(lookups?.cc, row.cc);
+  const sourceApplicantName =
+    (row.an !== undefined ? lookupText(lookups?.an, row.an) : "") ||
+    applicant?.name ||
+    "Unknown applicant";
+  const sourceApplicantCity =
+    row.ac !== undefined
+      ? lookupText(lookups?.ac, row.ac) || null
+      : applicant?.city ?? null;
   const nycReasons = snapshot.nyc?.[id] || row.nr || [];
   return {
     id,
@@ -89,8 +97,9 @@ export function expandProject(
     title: row.t,
     applicantId: applicant?.applicantId || "",
     applicantName: displayApplicantName(applicant?.name || "Unknown applicant"),
-    applicantNameRaw: applicant?.name || "Unknown applicant",
-    applicantCity: applicant?.city ?? null,
+    applicantNameRaw: sourceApplicantName,
+    applicantCity: sourceApplicantCity,
+    applicantSourceScoped: row.an !== undefined || row.ac !== undefined,
     categoryCode,
     category,
     status: lookupText(lookups?.st, row.st),

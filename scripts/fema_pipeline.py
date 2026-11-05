@@ -341,6 +341,8 @@ def transform_projects(
                 "pw": row.get("pwNumber"),
                 "t": row["title"],
                 "a": applicant_index[aid],
+                "an": row.get("applicantName") or "Unknown applicant",
+                "ac": row.get("applicantCity") or "",
                 "cc": row.get("damageCategoryCode") or "",
                 "cat": row.get("damageCategoryDescrip") or "",
                 "st": row.get("projectStatus") or "",
@@ -475,7 +477,7 @@ def build_meta(
         "geographyNote": (
             "The snapshot includes all OpenFEMA Public Assistance funded projects with "
             "stateAbbreviation = NY. NYC-related is an analyst-constructed subset based on "
-            "five-borough county, applicant city, and documented NYC entity name patterns. "
+            "five-borough county, applicant city, and documented NYC-related name patterns. "
             "It is not an official FEMA or City of New York classification."
         ),
         "source": SOURCE,
@@ -521,6 +523,8 @@ PUBLIC_FIELDS = (
     "fo",
     "lo",
     "it",
+    "an",
+    "ac",
 )
 
 
@@ -549,7 +553,7 @@ def encode_public_snapshot(transformed: dict[str, Any], meta: dict[str, Any]) ->
     projects = transformed["projects"]
     interned: dict[str, list[int]] = {}
     lookups: dict[str, list[str]] = {}
-    for field in ("cc", "cat", "st", "ps", "sz", "co", "it"):
+    for field in ("cc", "cat", "st", "ps", "sz", "co", "it", "an", "ac"):
         column, table = _intern([str(row.get(field) or "") for row in projects])
         interned[field] = column
         lookups[field] = table
@@ -581,6 +585,8 @@ def encode_public_snapshot(transformed: dict[str, Any], meta: dict[str, Any]) ->
                 row.get("fo"),
                 row.get("lo"),
                 interned["it"][i],
+                interned["an"][i],
+                interned["ac"][i],
             ]
         )
         if row.get("nyc") == 1:

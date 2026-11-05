@@ -16,7 +16,7 @@ The file is New York State, not NYC-only. About 59,000 worksheets and about $41 
 
 There is an NYC-related view. I created that tag. It is not an official FEMA geography.
 
-Then there is an exception queue. A flag means look here first. It does not mean the project is non-compliant.
+Then there is an exception queue. A flag means look here first. It does not mean the worksheet is non-compliant.
 
 ## 60-second explanation
 
@@ -26,7 +26,7 @@ The universe is New York State because City agencies are often coded Statewide. 
 
 I checked that the Grants Manager project id is unique, so I am not double-counting worksheets.
 
-Amount flags compare a project with others in the same disaster. A large Sandy worksheet can be normal. The same amount in a small flood may not be.
+Amount flags compare a worksheet with others in the same disaster within the selected All New York or NYC-related universe. A large Sandy worksheet can be normal. The same amount in a small flood may not be.
 
 The useful part is the limit. Public data can show where to look. It cannot show contracts, invoices, insurance, or reimbursement status. Those still have to be in the grant file.
 
@@ -36,9 +36,9 @@ The useful part is the limit. Public data can show where to look. It cannot show
 
 2. **NYC-related.** Toggle it. Say: this is an analyst view, not an official City portfolio. MTA and Port Authority are not City agencies.
 
-3. **Exception Monitor.** One row. Screening flag, not a finding. Amount is versus the same disaster, not versus whatever filter is on the page.
+3. **Exception Monitor.** One row. Screening flag, not a finding. Amount is versus the same disaster inside the selected geography universe; other page filters do not change that baseline.
 
-4. **Project detail.** Internal evidence needed. Contracts, procurement, invoices, proof of payment, insurance, reimbursement status are not in OpenFEMA. View source record if they ask.
+4. **Worksheet detail.** Internal evidence needed. Contracts, procurement, invoices, proof of payment, insurance, reimbursement status are not in OpenFEMA. View source record if they ask.
 
 5. **Stop.** Do not open Methodology unless asked.
 

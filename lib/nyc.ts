@@ -24,7 +24,7 @@ export function nycKind(applicantName: string, reasons: string[]): NycKind | nul
 }
 
 export function nycKindLabel(kind: NycKind | null): string {
-  if (kind === "city_entity") return "NYC entity";
+  if (kind === "city_entity") return "City-related name match";
   if (kind === "public_authority") return "Regional / public authority";
   if (kind === "geographic") return "NYC geographic match";
   return "Not NYC-related";
@@ -47,7 +47,11 @@ export function nycReasonDetails(project: {
     lines.push(`County = ${project.county || "borough county"}`);
   }
   if (project.nycReasons.includes("applicant_city")) {
-    lines.push(`Applicant city = ${project.applicantCity || "NYC city"}`);
+    lines.push(
+      project.applicantCity
+        ? `Applicant city = ${project.applicantCity}`
+        : "Applicant city matched the NYC city rule in the joined source row",
+    );
   }
   if (project.nycReasons.includes("applicant_name")) {
     lines.push("Applicant name matched a documented NYC-related pattern");

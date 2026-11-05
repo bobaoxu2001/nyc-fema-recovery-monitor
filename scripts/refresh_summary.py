@@ -84,8 +84,8 @@ def join_quality(snapshot: dict, rows: list[dict]) -> dict:
         "distinctApplicantName": len({item.get("name") for item in applicants}),
         "applicantCountDefinition": (
             "Distinct OpenFEMA applicantId values in the New York snapshot. "
-            "This is not a legal-entity count. The same organization can appear "
-            "under more than one ID or name spelling."
+            "A single applicantId can carry multiple source-name variants across "
+            "disasters. This count does not perform legal-entity resolution."
         ),
     }
 

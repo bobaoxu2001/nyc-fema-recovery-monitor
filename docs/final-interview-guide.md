@@ -594,7 +594,7 @@ They hang off the project id. They are the evidence layer. They are not in OpenF
 
 ## 18. What would you improve?
 
-Confirm the NYC entity list with the agencies OMB actually monitors. Add review status if I had internal data. I would not add a risk score.
+Confirm the NYC-related name-pattern list with the agencies OMB actually monitors. Add review status if I had internal data. I would not add a risk score.
 
 ## 19. How does it connect to previous work?
 

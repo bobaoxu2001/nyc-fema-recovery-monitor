@@ -6,7 +6,7 @@ import { CHECKLIST_DISCLAIMER, INTERNAL_EVIDENCE } from "@/lib/checklist";
 import { projectDisplayId } from "@/lib/expand";
 import { formatDate, formatUsdPrecise } from "@/lib/format";
 import { hasDisplayNormalization } from "@/lib/display-name";
-import { nycKind, nycKindLabel, nycReasonDetails } from "@/lib/nyc";
+import { nycReasonDetails } from "@/lib/nyc";
 import { OPENFEMA_DATASET_PAGE, openFemaProjectUrl } from "@/lib/openfema";
 import type { Project, ProjectFlag } from "@/lib/types";
 import { FlagStack } from "./flag-badge";
@@ -70,7 +70,14 @@ export function ProjectDetail({
         <dl className="mt-2 grid gap-x-6 sm:grid-cols-2">
           <Fact label="Applicant" value={project.applicantName} />
           {hasDisplayNormalization(project.applicantNameRaw) ? (
-            <Fact label="OpenFEMA source label" value={project.applicantNameRaw} />
+            <Fact
+              label={
+                project.applicantSourceScoped
+                  ? "OpenFEMA source label for this disaster"
+                  : "Representative source label for applicantId"
+              }
+              value={project.applicantNameRaw}
+            />
           ) : null}
           <Fact label="Applicant ID" value={project.applicantId || "—"} />
           <Fact label="Disaster" value={`${project.femaDeclarationString} — ${project.disasterTitle}`} />
@@ -85,19 +92,29 @@ export function ProjectDetail({
           <Fact label="Project status" value={project.status || "—"} />
           <Fact label="Process step" value={project.processStep || "—"} />
           <Fact label="County" value={project.county || "—"} />
-          <Fact label="Applicant city" value={project.applicantCity || "—"} />
+          <Fact
+            label={
+              project.applicantSourceScoped
+                ? "Applicant city for this disaster"
+                : "Representative applicant city"
+            }
+            value={project.applicantCity || "—"}
+          />
           <Fact label="Declaration date" value={formatDate(project.declarationDate)} />
           <Fact label="First obligation date" value={formatDate(project.firstObligationDate)} />
           <Fact label="Last obligation date" value={formatDate(project.lastObligationDate)} />
           <Fact
-            label="NYC-related tag"
-            value={
-              project.nycRelated
-                ? nycKindLabel(nycKind(project.applicantName, project.nycReasons))
-                : "No"
-            }
+            label="NYC-related analytical tag"
+            value={project.nycRelated ? "Yes — analyst-constructed" : "No"}
           />
         </dl>
+        {!project.applicantSourceScoped ? (
+          <p className="mt-3 rounded border border-rule bg-paper px-3 py-2 text-xs text-ink-soft">
+            Applicant name and city are representative values stored for this
+            <code>applicantId</code>. This snapshot does not preserve every
+            disaster-specific source variant.
+          </p>
+        ) : null}
         {project.nycRelated ? (
           <div className="mt-3 text-xs text-ink-soft">
             <p className="font-medium text-ink">Why this worksheet is NYC-related</p>

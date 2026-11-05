@@ -34,6 +34,8 @@ export type CompactProject = {
   pw: number | null;
   t: string;
   a: number;
+  an?: string | number;
+  ac?: string | number;
   cc: string | number;
   cat: string | number;
   st: string | number;
@@ -63,6 +65,8 @@ export type SnapshotLookups = {
   sz: string[];
   co: string[];
   it: string[];
+  an?: string[];
+  ac?: string[];
 };
 
 export type SnapshotMeta = {
@@ -186,6 +190,7 @@ export type Project = {
   applicantName: string;
   applicantNameRaw: string;
   applicantCity: string | null;
+  applicantSourceScoped?: boolean;
   categoryCode: string;
   category: string;
   status: string;

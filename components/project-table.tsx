@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { downloadCsv, projectsToCsv } from "@/lib/csv";
 import { projectDisplayId } from "@/lib/expand";
 import { formatCompactUsd, formatCount, formatDate } from "@/lib/format";
@@ -26,7 +26,6 @@ export function ProjectTable({
   projects: Project[];
   flagsById: Record<string, ProjectFlag[]>;
 }) {
-  const router = useRouter();
   const [sortKey, setSortKey] = useState<SortKey>("federalShare");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(0);
@@ -84,7 +83,7 @@ export function ProjectTable({
   if (!projects.length) {
     return (
       <EmptyState
-        title="No projects match the current filters"
+        title="No worksheets match the current filters"
         body="Reset filters or broaden the search to see project worksheets."
       />
     );
@@ -97,7 +96,7 @@ export function ProjectTable({
           <h2 className="font-serif text-lg text-navy">Grant portfolio table</h2>
           <p className="text-xs text-ink-soft">
             {formatCount(projects.length)} worksheets in the selected set. Click a
-            row for project detail.
+            worksheet title for detail.
           </p>
         </div>
         <button
@@ -119,7 +118,7 @@ export function ProjectTable({
             <tr>
               {header("applicantName", "Applicant")}
               {header("disasterTitle", "Disaster")}
-              {header("title", "Project")}
+              {header("title", "Worksheet")}
               {header("category", "Work category")}
               {header("federalShare", "Federal obligation", true)}
               {header("declarationDate", "Declared")}
@@ -128,11 +127,7 @@ export function ProjectTable({
           </thead>
           <tbody>
             {slice.map((project) => (
-              <tr
-                key={project.id}
-                className="cursor-pointer hover:bg-navy-pale/60"
-                onClick={() => router.push(`/projects/${project.id}`)}
-              >
+              <tr key={project.id} className="hover:bg-navy-pale/60">
                 <td className="max-w-[180px]">
                   <div className="truncate">{project.applicantName}</div>
                   <div className="text-[11px] text-ink-faint">{project.county || "County not listed"}</div>
@@ -142,7 +137,12 @@ export function ProjectTable({
                   <div className="truncate text-[11px] text-ink-faint">{project.disasterTitle}</div>
                 </td>
                 <td className="max-w-[220px]">
-                  <div className="truncate">{project.title}</div>
+                  <Link
+                    href={`/projects/${project.id}`}
+                    className="block truncate text-navy underline decoration-1 underline-offset-2"
+                  >
+                    {project.title}
+                  </Link>
                   <div className="text-[11px] text-ink-faint">
                     PW {project.pwNumber ?? "—"} · {projectDisplayId(project)}
                   </div>

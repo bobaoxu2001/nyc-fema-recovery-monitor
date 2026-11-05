@@ -17,6 +17,7 @@ The script:
 from __future__ import annotations
 
 import json
+import os
 import sys
 import time
 from datetime import datetime, timezone
@@ -42,7 +43,7 @@ PROCESSED_DIR = ROOT / "data" / "processed"
 PUBLIC_DATA_DIR = ROOT / "public" / "data"
 RAW_DIR = ROOT / "data" / "raw"
 
-PAGE_SIZE = 1000
+PAGE_SIZE = int(os.environ.get("OPENFEMA_PAGE_SIZE", "1000"))
 TIMEOUT = 90
 MAX_RETRIES = 6
 USER_AGENT = (

@@ -26,7 +26,7 @@ const ITEMS: Array<{
   {
     key: "applicantCount",
     label: "Applicants",
-    hint: "Distinct OpenFEMA applicantId values. This is not a legal-entity count. The same organization can appear under more than one ID or name spelling.",
+    hint: "Distinct OpenFEMA applicantId values. A single applicantId can carry multiple source-name variants across disasters. This count does not perform legal-entity resolution.",
     footnote: "Distinct applicantId",
   },
   {

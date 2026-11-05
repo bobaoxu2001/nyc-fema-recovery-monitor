@@ -22,7 +22,7 @@ It is not a disaster model, a chatbot, or a generic portfolio site.
 
 - Summarizes obligated Public Assistance worksheets for New York
 - Breaks federal obligations down by disaster, applicant, and FEMA work category
-- Offers an optional NYC-related subset (borough county, applicant city, or documented NYC entity name)
+- Offers an optional NYC-related subset (borough county, applicant city, or documented NYC-related name pattern)
 - Flags records for analyst review using disaster-cohort amount screens and data-quality checks
 - Opens a project detail view with an evidence-needed table, not a pretend audit checklist
 
@@ -55,13 +55,13 @@ The app does **not** use Public Assistance Grant Award Activities for headline t
 
 **Primary metric:** federal share obligated.
 
-The homepage **Applicants** count is distinct OpenFEMA `applicantId` values (4,819 in this snapshot). That is a unique key in the source file, not a legal-entity count after name resolution. The same organization can appear under more than one ID or spelling.
+The homepage **Applicants** count is distinct OpenFEMA `applicantId` values (4,819 in this snapshot). A single `applicantId` can carry multiple source-name variants across disasters. This count does not perform legal-entity resolution.
 
 The data universe is **New York State Public Assistance**. The headline federal-share figure is statewide. **NYC-related** is an analyst-constructed subset, not an official geography, and not every tagged applicant is a City agency. A record is tagged if:
 
 1. County is Bronx, Kings, New York, Queens, or Richmond, or
 2. Applicant city is New York, Manhattan, Bronx, Brooklyn, Queens, or Staten Island, or
-3. Applicant name matches a documented NYC entity pattern (City of New York, NYCHA, MTA New York City Transit, CUNY, and similar)
+3. Applicant name matches a documented NYC-related pattern (City of New York, NYCHA, MTA New York City Transit, CUNY, and similar)
 
 City agencies are often stored as county = Statewide, so borough filters alone would undercount NYC activity. The current snapshot tags **3,100** worksheets as NYC-related.
 
@@ -69,7 +69,7 @@ Details live on the in-app **Methodology** page.
 
 ## Analytical Flags
 
-Amount flags use the disaster as the peer group. A Sandy worksheet is compared with other Sandy worksheets. The baseline does not change when the page is filtered to one applicant. High-dollar and Extreme are mutually exclusive. A 95th-percentile cut surfaces roughly the top twentieth of each disaster, so a review queue near 5% of worksheets is partly by design. It is not an estimated error rate.
+Amount flags use the disaster as the peer group within the selected **All New York** or **NYC-related** universe. A Sandy worksheet is compared with other Sandy worksheets in that geography universe. Applicant, category, year, amount, flag-status, and search filters do not change the baseline. High-dollar and Extreme are mutually exclusive. A 95th-percentile cut surfaces roughly the top twentieth of each disaster, so a review queue near 5% of worksheets is partly by design. It is not an estimated error rate.
 
 In this snapshot, 2,963 worksheets are flagged (5.0%): 2,935 from the materiality screen (2,327 high-dollar, 608 extreme) and 28 negative federal-share records.
 
@@ -93,7 +93,7 @@ Top applicant / category share is shown as a **portfolio concentration indicator
 
 OpenFEMA does not include procurement files, contracts, invoices, proofs of payment, insurance documents, or City reimbursement status. The project-detail checklist is illustrative only. OpenFEMA also notes that its financial figures come from Grants Manager, not FEMA’s official financial systems, and are not intended for official federal reporting.
 
-Federal-share amounts are nominal and already net of the applicable cost share; they are not a like-for-like comparison across disasters.
+Federal-share amounts are nominal and reflect applicable federal cost-share percentages, which can vary by declaration. Cross-disaster comparisons are therefore descriptive rather than strictly like-for-like.
 
 This snapshot is a current-state obligated portfolio, not a measure of recovery progress over time.
 

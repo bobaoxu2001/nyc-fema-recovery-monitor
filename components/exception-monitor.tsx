@@ -19,10 +19,11 @@ export function ExceptionMonitor() {
       <section className="panel p-4">
         <h2 className="font-serif text-lg text-navy">Why a record is flagged</h2>
         <p className="mt-1 text-sm text-ink-soft">
-          Amount flags compare a worksheet with other projects in the same
-          disaster. They do not change when you filter to one applicant. High-dollar
-          is the 95th–99th percentile. Extreme is the 99th percentile and above.
-          A project gets one amount flag, not both. A queue near 5% of worksheets
+          Amount flags compare a worksheet with other worksheets in the same
+          disaster within the selected All New York or NYC-related universe. Other
+          filters do not change the baseline. High-dollar is the 95th–99th percentile.
+          Extreme is the 99th percentile and above.
+          A worksheet gets one amount flag, not both. A queue near 5% of worksheets
           is partly by design because of that materiality screen; it is not an
           estimated error rate. These are not findings of non-compliance.
         </p>
@@ -33,7 +34,7 @@ export function ExceptionMonitor() {
           </div>
           <div className="rounded border border-rule bg-paper px-3 py-2">
             <dt className="text-xs uppercase tracking-[0.12em] text-ink-faint">Minimum cohort</dt>
-            <dd className="mt-1 font-serif text-xl text-navy tabular">20 projects</dd>
+            <dd className="mt-1 font-serif text-xl text-navy tabular">20 worksheets</dd>
           </div>
           <div className="rounded border border-rule bg-paper px-3 py-2">
             <dt className="text-xs uppercase tracking-[0.12em] text-ink-faint">Flagged for review</dt>
@@ -69,22 +70,21 @@ export function ExceptionMonitor() {
           </dl>
         </article>
         <article className="panel p-4">
-          <h2 className="font-serif text-lg text-navy">Largest holders in this view</h2>
+          <h2 className="font-serif text-lg text-navy">Largest applicant portfolios</h2>
           <p className="text-xs text-ink-soft">
             {topApplicant
               ? `${displayApplicantName(topApplicant.name)} accounts for ${formatCompactUsd(topApplicant.federalShare)}.`
               : "No applicant totals in this selection."}
           </p>
           <p className="mt-2 text-xs text-ink-soft">
-            Concentration is common in disaster recovery. It does not mean the
-            funding is improper.
+            Concentration is descriptive and does not indicate improper funding.
           </p>
         </article>
       </section>
 
       <section className="panel overflow-hidden">
         <div className="border-b border-rule px-4 py-3">
-          <h2 className="font-serif text-lg text-navy">Projects requiring review</h2>
+          <h2 className="font-serif text-lg text-navy">Worksheets requiring review</h2>
           <p className="text-xs text-ink-soft">
             Up to 40 flagged worksheets, ordered by federal share.
           </p>
@@ -94,7 +94,7 @@ export function ExceptionMonitor() {
             <table>
               <thead>
                 <tr>
-                  <th>Project</th>
+                  <th>Worksheet</th>
                   <th>Applicant</th>
                   <th className="text-right">Federal amount</th>
                   <th>Flag</th>
